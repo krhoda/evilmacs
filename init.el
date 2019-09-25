@@ -303,12 +303,13 @@
    :states 'normal
    "d" 'godef-jump)
 
+  (despot
+    :states 'normal
+    "f" 'gofmt)
+
   (dear-leader
     :states 'normal
     "m" 'compile)
-  (dear-leader
-    :states 'normal
-    "z" 'gofmt)
 
   ;; Misc go stuff
   (auto-complete-mode 1)
@@ -332,8 +333,6 @@
 ;;   (load-theme-buffer-local theme (current-buffer)))
 
 (fullscreen)
-(require 'em-smart)
-(eshell-smart-initialize)
 
 ;;; COLORSCHEMES:
 (use-package ubuntu-theme :ensure t)
