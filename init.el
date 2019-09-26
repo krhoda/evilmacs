@@ -192,7 +192,7 @@
 (use-package rjsx-mode :ensure t)
 (require 'eslint-fix)
 
-;; Erlang:
+;; ERLANG:
 (use-package erlang
   :ensure t
   :init
@@ -208,6 +208,9 @@
   :init
   (setq edts-inhibit-package-check t
         edts-man-root "~/.emacs.d/edts/doc/18.2.1"))
+
+;;; LANG SERVER:
+;;; FORGET THE PAST.
 
 ;;; LEADERSHIP
 (use-package general :ensure t
@@ -237,20 +240,25 @@
    "*"    '(lambda() (interactive) (eshell) :which-key "eshell now!")
    "!"    '(lambda() (interactive) (term our-zsh-path) :which-key "zsh now!")
    "p"    '(projectile-command-map :which-key "Ctrl-P For Emacs")
+	;;; Figure out how to break it into mode specific
+   "k"    '(org-metaup :which-key "shift org list up")
+   "j"    '(org-metadown :which-key "shift org list down")
+   "h"    '(org-metaleft :which-key "premote org list down")
+   "l"    '(org-metaright :which-key "demote org list")
    )
 
   (dear-leader
-   :keymaps 'visual
-   "e"   '(er/expand-region :which-key "expand region in visual mode")
+	:keymaps 'visual
+	"e"   '(er/expand-region :which-key "expand region in visual mode")
    )
 
   (despot
    :keymaps 'normal
    "cl"   '(evilnc-comment-or-uncomment-lines :which-key "toggle line comment")
    "cp"   '(evilnc-comment-or-uncomment-paragraphs :which-key "toggle paragraph comment")
-  "pn"    '(go-playground :which-key "new Go Playground")
-  "pe"    '(go-playground-exec :which-key "run Go Playground")
-  "pd"    '(go-playground-rm :which-key "delete Go Playground")
+   "pn"   '(go-playground :which-key "new Go Playground")
+   "pe"   '(go-playground-exec :which-key "run Go Playground")
+   "pd"   '(go-playground-rm :which-key "delete Go Playground")
    )
 
   (despot
@@ -338,6 +346,7 @@
 (use-package ubuntu-theme :ensure t)
 (use-package abyss-theme :ensure t)
 (use-package cyberpunk-theme :ensure t)
+(use-package soothe-theme :ensure t)
 (add-to-list 'custom-theme-load-path
 			 (file-name-as-directory "~/.emacs.d/lisp/themes"))
 
