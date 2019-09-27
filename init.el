@@ -28,7 +28,7 @@
 (setq initial-scratch-message "fortune | cowsay") ; print a default message in the empty scratch buffer opened at startup
 (setq-default tab-width 4)
 (menu-bar-mode -1) ; No Menubars. I haven't forgotten Vim.
-(tool-bar-mode -1) ; No Toolbars.
+; (tool-bar-mode -1) ; No Toolbars.
 
 (setq shell-file-name our-zsh-path) ; Hail ZSH
 
@@ -277,12 +277,12 @@
   :config
   (add-hook 'after-init-hook 'which-key-mode)) ; help menus for rebindings
 
-;;; CUSTOM FUNCTIONS:
-(defun fullscreen ()
-  "Fullscreen now!"
-  (interactive)
-  (x-send-client-message nil 0 nil "_NET_WM_STATE" 32
-						 '(2 "_NET_WM_STATE_FULLSCREEN" 0)))
+;; ;;; CUSTOM FUNCTIONS:
+;; (defun fullscreen ()
+;;   "Fullscreen now!"
+;;   (interactive)
+;;   (x-send-client-message nil 0 nil "_NET_WM_STATE" 32
+;; 						 '(2 "_NET_WM_STATE_FULLSCREEN" 0)))
 
 (defun config-self ()
   "Opens Emacs config file in Emacs -- spooky."
@@ -340,7 +340,7 @@
 ;;   "Set local buffer theme."
 ;;   (load-theme-buffer-local theme (current-buffer)))
 
-(fullscreen)
+;; (fullscreen)
 
 ;;; COLORSCHEMES:
 (use-package ubuntu-theme :ensure t)
