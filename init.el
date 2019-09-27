@@ -71,7 +71,6 @@
 (use-package evil-nerd-commenter :ensure t)
 
 ;;; GENERAL USE
-
 (use-package linum-relative
   :ensure t
   :config
@@ -343,10 +342,6 @@
 ;; (fullscreen)
 
 ;;; COLORSCHEMES:
-(use-package ubuntu-theme :ensure t)
-(use-package abyss-theme :ensure t)
-(use-package cyberpunk-theme :ensure t)
-(use-package soothe-theme :ensure t)
 (add-to-list 'custom-theme-load-path
 			 (file-name-as-directory "~/.emacs.d/lisp/themes"))
 
