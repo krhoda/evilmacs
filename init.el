@@ -149,6 +149,9 @@
 
 (use-package load-theme-buffer-local :ensure t)
 
+;;;
+(use-package yasnippet :ensure t)
+
 ;;; LANGUAGES:
 ;; MARKDOWN
 (use-package markdown-mode
@@ -207,9 +210,23 @@
   :init
   (setq edts-inhibit-package-check t
         edts-man-root "~/.emacs.d/edts/doc/18.2.1"))
+;;; HASKELL
+(use-package haskell-mode :ensure t)
 
 ;;; LANG SERVER:
 ;;; FORGET THE PAST.
+(use-package lsp-mode
+  :ensure t
+  :hook (haskell-mode . lsp-deferred)
+  :commands (lsp lsp-deferred)
+  )
+(use-package lsp-ui
+  :ensure t
+  :commands lsp-ui-mode)
+(add-hook 'lsp-mode-hook 'lsp-ui-mode)
+
+(use-package lsp-haskell :ensure t)
+(add-hook 'haskell-mode 'flycheck-mode)
 
 ;;; LEADERSHIP
 (use-package general :ensure t
@@ -228,7 +245,7 @@
    "b"	  '(ivy-switch-buffer :which-key "switch-buffer")  ; change buffer, chose using ivy
    "/"    '(counsel-git-grep :which-key "git grep") ; find string in git project
    "ff"   '(counsel-find-file :which-key "find file") ; find file in ivy
-   "h"    '(counsel-recentf :which-key "recent files") ; find recent files in ivy
+   "H"    '(counsel-recentf :which-key "recent files") ; find recent files in ivy
    "fg"   '(counsel-git :which-key "find file in git") ; find file in git project
    "wj"   '(evil-window-down :which-key "jump to below window")
    "wk"   '(evil-window-up :which-key "jump to above window")
@@ -268,6 +285,10 @@
    :keymaps 'normal
    ","    '(avy-goto-char-2 :which-key "move to occurance of these 2 chars")
    "l"    '(avy-goto-line :which-key "move to line")
+   "d"    '(lsp-ui-peek-find-definitions :which-key "show definitions")
+   "s"    '(lsp-ui-peek-find-references :which-key "show references")
+   "n"    '(lsp-ui-peek-jump-forward :which-key "jump to next definition")
+   "N"    '(lsp-ui-peek-jump-backward :which-key "jump to next reference")
    )
   )
 
@@ -340,6 +361,7 @@
 ;;   (load-theme-buffer-local theme (current-buffer)))
 
 ;; (fullscreen)
+
 
 ;;; COLORSCHEMES:
 (add-to-list 'custom-theme-load-path
