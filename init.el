@@ -164,13 +164,13 @@
 
 ;; GOLANG:
 (use-package go-mode :ensure t)
-(use-package go-autocomplete :ensure t)
-(use-package flymake-go :ensure t)
-(use-package go-guru :ensure t)
+;; (use-package go-autocomplete :ensure t)
+;; (use-package flymake-go :ensure t)
+;; (use-package go-guru :ensure t)
 
 (add-hook 'go-mode-hook 'our-go-mode)
-(with-eval-after-load 'go-mode
-   (require 'go-autocomplete))
+;; (with-eval-after-load 'go-mode
+;;    (require 'go-autocomplete))
 
 ;; Go Playground / REPL
 (use-package go-playground
@@ -220,10 +220,15 @@
   :hook (haskell-mode . lsp-deferred)
   :commands (lsp lsp-deferred)
   )
+(add-hook 'go-mode-hook #'lsp-deferred)
+
 (use-package lsp-ui
   :ensure t
   :commands lsp-ui-mode)
 (add-hook 'lsp-mode-hook 'lsp-ui-mode)
+
+(use-package company-lsp
+    :commands company-lsp)
 
 (use-package lsp-haskell :ensure t)
 (add-hook 'haskell-mode 'flycheck-mode)
@@ -324,8 +329,7 @@
       (set (make-local-variable 'compile-command)
            "go build -v && go test -v && go vet"))
 
-  (go-guru-hl-identifier-mode)                    ; highlight identifiers
-
+  ;; (go-guru-hl-identifier-mode)                    ; highlight identifiers
   ;; Key bindings specific to go-mode
   (despot
    :states 'normal
@@ -340,7 +344,7 @@
     "m" 'compile)
 
   ;; Misc go stuff
-  (auto-complete-mode 1)
+  ;; (auto-complete-mode 1)
   )
 
 (defun our-web-hook ()
