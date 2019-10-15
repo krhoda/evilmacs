@@ -231,7 +231,8 @@
 (add-hook 'lsp-mode-hook 'lsp-ui-mode)
 
 (use-package company-lsp
-    :commands company-lsp)
+  :ensure t
+  :commands company-lsp)
 
 (use-package lsp-haskell :ensure t)
 (add-hook 'haskell-mode 'flycheck-mode)
@@ -293,6 +294,7 @@
    :keymaps 'normal
    ","    '(avy-goto-char-2 :which-key "move to occurance of these 2 chars")
    "l"    '(avy-goto-line :which-key "move to line")
+   "?"    '(lsp-describe-thing-at-point :which-key "describe this")
    "d"    '(lsp-ui-peek-find-definitions :which-key "show definitions")
    "f"    '(lsp-ui-peek-find-references :which-key "show references")
    "n"    '(lsp-ui-peek-jump-forward :which-key "jump to next definition")
