@@ -70,6 +70,11 @@
 
 (use-package evil-nerd-commenter :ensure t)
 
+(use-package evil-surround
+  :ensure t
+  :config
+  (global-evil-surround-mode 1))
+
 ;;; GENERAL USE
 (use-package linum-relative
   :ensure t
@@ -211,9 +216,9 @@
   :init
   (setq edts-inhibit-package-check t
         edts-man-root "~/.emacs.d/edts/doc/18.2.1"))
+
 ;;; HASKELL
 (use-package haskell-mode :ensure t)
-
 
 ;;; LANG SERVER:
 ;;; FORGET THE PAST.
@@ -224,7 +229,6 @@
   :hook (go-mode . lsp-deferred)
   :commands (lsp lsp-deferred)
   )
-
 
 (use-package lsp-ui
   :ensure t
@@ -248,7 +252,6 @@
 
   (dear-leader
    :keymaps 'normal
-   "a"    '(org-agenda :which-key "org-agenda")
    "e"    '(er/expand-region :which-key "expand region in normal mode")
    "E"    '(config-self :which-key "open init.el")
    "s"    '(swiper :which-key "swiper")
@@ -381,6 +384,11 @@
   :ensure t)
 (add-hook 'clojure-mode-hook #'cider-mode)
 
+; A Git Wrapper
+(use-package magit
+	:ensure t
+    :bind ("C-x g" . magit-status))
+
 ;;; COLORHOOKS:
 ;;; ON TRIAL:
 ;
@@ -420,10 +428,6 @@
            ; ("C-M-p" . dumb-jump-back)
            ; ("C-M-q" . dumb-jump-quick-look)))
 
-  ; A Git Wrapper
-  ; (use-package magit
-    ; :ensure t
-    ; :bind ("C-x g" . magit-status))
 
 (provide 'init)
 ;;; init ends here
