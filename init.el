@@ -214,6 +214,7 @@
 ;;; HASKELL
 (use-package haskell-mode :ensure t)
 
+
 ;;; LANG SERVER:
 ;;; FORGET THE PAST.
 (use-package lsp-mode
@@ -371,6 +372,14 @@
 ;;; COLORSCHEMES:
 (add-to-list 'custom-theme-load-path
 			 (file-name-as-directory "~/.emacs.d/lisp/themes"))
+
+;;; DOES NOT PLAY WELL WITH OTHERS:
+;;; CLOJURE:
+(use-package clojure-mode
+  :ensure t)
+(use-package cider
+  :ensure t)
+(add-hook 'clojure-mode-hook #'cider-mode)
 
 ;;; COLORHOOKS:
 ;;; ON TRIAL:
