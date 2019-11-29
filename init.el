@@ -32,7 +32,7 @@
 
 (setq shell-file-name our-zsh-path) ; Hail ZSH
 
-(global-hl-line-mode 1) ; vim mechwarrior
+; (global-hl-line-mode 1) ; vim mechwarrior
 
 (add-to-list 'load-path "~/.emacs.d/lisp/") ; vaccum in all the custom lisp I have lying around
 (add-hook 'before-save-hook 'delete-trailing-whitespace) ; you get it.
@@ -218,7 +218,14 @@
         edts-man-root "~/.emacs.d/edts/doc/18.2.1"))
 
 ;;; HASKELL
-(use-package haskell-mode :ensure t)
+(use-package
+  haskell-mode
+  :ensure t
+  )
+
+;; NOTE: BEWARE -- Flymake WILL need to be disabled through the configure-group interface for best results. LONG LIVE LSP ... until something better comes along.
+(add-hook 'haskell-mode-hook 'flycheck-mode)
+(add-hook 'haskell-mode-hook 'enable-paredit-mode)
 
 ;;; LANG SERVER:
 ;;; FORGET THE PAST.
@@ -234,13 +241,21 @@
   :ensure t
   :commands lsp-ui-mode)
 (add-hook 'lsp-mode-hook 'lsp-ui-mode)
+(add-hook 'lsp-mode-hook 'our-lsp-hook)
+
 
 (use-package company-lsp
   :ensure t
   :commands company-lsp)
 
 (use-package lsp-haskell :ensure t)
-(add-hook 'haskell-mode 'flycheck-mode)
+
+(autoload 'enable-paredit-mode "paredit"
+  "Turn on pseudo-structural editing of Lisp code."
+  t)
+
+(add-hook 'emacs-lisp-mode-hook       'enable-paredit-mode)
+(add-hook 'lisp-mode-hook             'enable-paredit-mode)
 
 ;;; LEADERSHIP
 (use-package general :ensure t
@@ -252,28 +267,34 @@
 
   (dear-leader
    :keymaps 'normal
-   "e"    '(er/expand-region :which-key "expand region in normal mode")
    "E"    '(config-self :which-key "open init.el")
-   "s"    '(swiper :which-key "swiper")
+
+   "e"    '(er/expand-region :which-key "expand region in normal mode")
+
    "b"	  '(ivy-switch-buffer :which-key "switch-buffer")  ; change buffer, chose using ivy
+
    "/"    '(counsel-git-grep :which-key "git grep") ; find string in git project
-   "ff"   '(counsel-find-file :which-key "find file") ; find file in ivy
-   "H"    '(counsel-recentf :which-key "recent files") ; find recent files in ivy
-   "fg"   '(counsel-git :which-key "find file in git") ; find file in git project
-   "wj"   '(evil-window-down :which-key "jump to below window")
-   "wk"   '(evil-window-up :which-key "jump to above window")
-   "wh"   '(evil-window-left :which-key "jump to window to the left")
-   "wl"   '(evil-window-right :which-key "jump to window to the right")
+   "f"    '(counsel-find-file :which-key "find file") ; find file in ivy
+   "r"    '(counsel-recentf :which-key "recent files") ; find recent files in ivy
+
    "J"    '(lambda () (interactive) (split-window-below) :which-key "split window below")
    "L"    '(lambda () (interactive) (split-window-right) :which-key "split window right")
+
    "*"    '(lambda() (interactive) (eshell) :which-key "eshell now!")
    "!"    '(lambda() (interactive) (term our-zsh-path) :which-key "zsh now!")
-   "p"    '(projectile-command-map :which-key "Ctrl-P For Emacs")
+
+   "p"    '(projectile-command-map :which-key "projects now!")
+
+   "."    '(paredit-forward-slurp-sexp :which-key "paredit slurp forward")
+   ","    '(paredit-backward-slurp-sexp :which-key "paredit slurp backward")
+   ">"    '(paredit-forward-barf-sexp :which-key "paredit barf forward")
+   "<"    '(paredit-backward-barf-sexp :which-key "paredit barf backward")
+
 	;;; Figure out how to break it into mode specific
-   "k"    '(org-metaup :which-key "shift org list up")
-   "j"    '(org-metadown :which-key "shift org list down")
-   "h"    '(org-metaleft :which-key "premote org list down")
-   "l"    '(org-metaright :which-key "demote org list")
+   ;; "k"    '(org-metaup :which-key "shift org list up")
+   ;; "j"    '(org-metadown :which-key "shift org list down")
+   ;; "h"    '(org-metaleft :which-key "premote org list down")
+   ;; "l"    '(org-metaright :which-key "demote org list")
    )
 
   (dear-leader
@@ -285,6 +306,7 @@
    :keymaps 'normal
    "cl"   '(evilnc-comment-or-uncomment-lines :which-key "toggle line comment")
    "cp"   '(evilnc-comment-or-uncomment-paragraphs :which-key "toggle paragraph comment")
+
    "pn"   '(go-playground :which-key "new Go Playground")
    "pe"   '(go-playground-exec :which-key "run Go Playground")
    "pd"   '(go-playground-rm :which-key "delete Go Playground")
@@ -297,12 +319,24 @@
   (scholar
    :keymaps 'normal
    ","    '(avy-goto-char-2 :which-key "move to occurance of these 2 chars")
-   "l"    '(avy-goto-line :which-key "move to line")
+   "m"    '(avy-goto-line :which-key "move to line")
+
+   "j"   '(evil-window-down :which-key "jump to below window")
+   "k"   '(evil-window-up :which-key "jump to above window")
+   "h"   '(evil-window-left :which-key "jump to window to the left")
+   "l"   '(evil-window-right :which-key "jump to window to the right")
+
    "?"    '(lsp-describe-thing-at-point :which-key "describe this")
    "d"    '(lsp-ui-peek-find-definitions :which-key "show definitions")
    "f"    '(lsp-ui-peek-find-references :which-key "show references")
    "n"    '(lsp-ui-peek-jump-forward :which-key "jump to next definition")
    "N"    '(lsp-ui-peek-jump-backward :which-key "jump to prev definition")
+
+   "\""   '(paredit-meta-doublequote :which-key "wrap quote")
+   "("    '(paredit-wrap-round :which-key "wrap in parens")
+   "["    '(paredit-wrap-square :which-key "wrap in braces")
+   "{"    '(paredit-wrap-curly :which-key "wrap in brackets")
+   "<"    '(paredit-wrap-angle :which-key "wrap in angle tags")
    )
   )
 
@@ -365,6 +399,16 @@
 	erlang-compile-extra-opts '((i . "../include"))
 	erlang-root-dir "/usr/local/lib/erlang"))
 
+(defun our-lsp-hook ()
+  "LSP go-to defs."
+   (scholar
+	 :keymaps 'normal
+     "?"    '(lsp-describe-thing-at-point :which-key "describe this")
+     "d"    '(lsp-ui-peek-find-definitions :which-key "show definitions")
+     "f"    '(lsp-ui-peek-find-references :which-key "show references")
+     "n"    '(lsp-ui-peek-jump-forward :which-key "jump to next definition")
+     "N"    '(lsp-ui-peek-jump-backward :which-key "jump to prev definition")
+   ))
 ;; (defun our-local-theme-hook (theme)
 ;;   "Set local buffer theme."
 ;;   (load-theme-buffer-local theme (current-buffer)))
@@ -383,7 +427,58 @@
 (use-package cider
   :ensure t)
 (add-hook 'clojure-mode-hook #'cider-mode)
+(add-hook 'clojure-mode-hook 'our-clojure-hook)
+(add-hook 'clojure-mode-hook 'enable-paredit-mode)
 
+(defun our-clojure-hook ()
+  "Clojure Mode Hook Un-complected"
+  (dear-leader
+	:states 'normal
+	"i"  '(cider-interrupt :which-key "interrupt CIDER computation")
+	;; Last expressions.
+	"xl" '(cider-eval-last-sexp :which-key "CIDER eval last expression")
+	"xr" '(cider-eval-last-sexp-and-replace :which-key "CIDER replace expression with result")
+	;; At point expressions.
+	"xp" '(cider-pprint-eval-defun-at-point :which-key "CIDER pretty-print eval expression")
+	"xx" '(cider-eval-sexp-at-point :which-key "CIDER eval expression at point")
+	"xf" '(cider-eval-defun-at-point :which-key "CIDER eval defun at point")
+	;; Up to point evaluation.
+	"x." '(cider-eval-defun-up-to-point :which-key "CIDER eval defun up to point")
+	;; Namespace
+	"x!" '(cider-ns-refresh :which-key "CIDER refesh all file in name-space")
+	"xn" '(cider-eval-ns-form :which-key "CIDER eval ns form")
+	;; Macros
+	"me" '(cider-macroexpand-1 :which-key "CIDER expand ONE macro")
+	"ma" '(cider-macroexpand-all :which-key "CIDER expand ALL macros")
+	)
+
+   (dear-leader
+	:states 'visual
+	"xe" 'cider-eval-region
+	)
+
+   (scholar
+	 :states 'normal
+	 ;; Eval in Repl
+	 "xx" '(cider-eval-buffer :which-key "CIDER eval whole buffer")
+	 "xl" '(cider-eval-last-sexp-to-repl :which-key "CIDER eval last expression in repl")
+	 ;; Sync Repl
+	 "r"  '(cider-switch-to-repl-buffer :which-key "CIDER eval load buffer into repl")
+	 "xn" '(cider-repl-set-ns :which-key "CIDER set repl to current ns")
+	 "!"  '(cider-find-and-clear-repl-output :which-key "CIDER clear repl")
+	 ;; Docs
+	 "?"  '(cider-doc :which-key "CIDER display doc string")
+	 "c"  '(cider-clojuredocs :which-key "CIDER display clojure docs")
+	 "w"  '(cider-clojuredocs-web :which-key "CIDER display doc string")
+	 "J"  '(cider-javadoc :which-key "CIDER display java docs")
+	 ;; Find Define
+	 "d"  '(cider-find-var :which-key "CIDER go-to definition")
+	 "r"  '(cider-find-resource :which-key "CIDER go-to resource")
+	 "n"  '(cider-find-ns :which-key "CIDER go-to name-space")
+	 "f"  '(cider-xref-fn-refs :which-key "CIDER find references across loaded namespaces")
+	 "F"  '(cider-xref-fn-deps :which-key "CIDER find dependants across loaded namespaces")
+	)
+   )
 ; A Git Wrapper
 (use-package magit
 	:ensure t
