@@ -227,6 +227,16 @@
 (add-hook 'haskell-mode-hook 'flycheck-mode)
 (add-hook 'haskell-mode-hook 'enable-paredit-mode)
 
+;; RUST
+(use-package
+  rust-mode
+  :ensure t
+  :config
+  (setq rust-format-on-save t))
+
+(add-hook 'rust-mode-hook
+		  (lambda () (setq indent-tabs-mode nil)))
+
 ;;; LANG SERVER:
 ;;; FORGET THE PAST.
 (use-package lsp-mode
@@ -234,6 +244,7 @@
   :hook (haskell-mode . lsp-deferred)
   :hook (web-mode . lsp-deferred)
   :hook (go-mode . lsp-deferred)
+  :hook (rust-mode . lsp-deferred)
   :commands (lsp lsp-deferred)
   )
 
@@ -483,6 +494,7 @@
 (use-package magit
 	:ensure t
     :bind ("C-x g" . magit-status))
+
 
 ;;; COLORHOOKS:
 ;;; ON TRIAL:
