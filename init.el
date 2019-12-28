@@ -268,6 +268,14 @@
   (despot
     :states 'normal
     "f" 'rust-format-buffer)
+
+  (scholar
+	:states 'normal
+	;; Cannot use with current UI settings:
+    ;; "?"    '(racer-describe-tooltip :which-key "describe this tooltip")
+    "?"    '(racer-describe :which-key "describe this")
+    "d"    '(racer-find-definition :which-key "show definitions")
+	)
   )
 
 ;;; LANG SERVER:
