@@ -229,13 +229,46 @@
 
 ;; RUST
 (use-package
+  racer
+  :ensure t
+  )
+
+;; Deprecated, but possibly useful if I want to bring cargo into the editor.
+(use-package
+  cargo
+  :ensure t
+  )
+
+(use-package
   rust-mode
   :ensure t
   :config
-  (setq rust-format-on-save t))
+  (setq rust-format-on-save t)
+  )
+
+(use-package
+  flycheck-rust
+  :ensure t
+  )
 
 (add-hook 'rust-mode-hook
 		  (lambda () (setq indent-tabs-mode nil)))
+
+(add-hook 'flycheck-mode-hook #'flycheck-rust-setup)
+(add-hook 'rust-mode-hook #'cargo-minor-mode)
+(add-hook 'rust-mode-hook #'racer-mode)
+
+(add-hook 'racer-mode-hook #'our-rust-mode)
+(add-hook 'racer-mode-hook #'company-mode)
+(add-hook 'racer-mode-hook #'eldoc-mode)
+
+(defun our-rust-mode ()
+  "DIY rust mode custom keybindings and constant fmt."
+  (add-hook 'before-save-hook 'rust-format-on-save) ; rustfmt before every save
+  (despot
+    :states 'normal
+    "f" 'rust-format-buffer)
+  )
 
 ;;; LANG SERVER:
 ;;; FORGET THE PAST.
@@ -244,7 +277,7 @@
   :hook (haskell-mode . lsp-deferred)
   :hook (web-mode . lsp-deferred)
   :hook (go-mode . lsp-deferred)
-  :hook (rust-mode . lsp-deferred)
+  ;; :hook (rust-mode . lsp-deferred)
   :commands (lsp lsp-deferred)
   )
 
