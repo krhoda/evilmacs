@@ -278,6 +278,11 @@
 	)
   )
 
+;;; WASM:
+;; View WASM as LISP from: https://github.com/devonsparks/wat-mode
+(add-to-list 'load-path "~/.emacs.d/wat-mode")
+(require 'wat-mode)
+
 ;;; LANG SERVER:
 ;;; FORGET THE PAST.
 (use-package lsp-mode
