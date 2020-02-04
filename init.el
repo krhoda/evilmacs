@@ -141,9 +141,12 @@
 			'(javascript-jshint json-jsonlist)))
   (flycheck-add-mode 'javascript-eslint 'web-mode)
   (add-hook 'after-init-hook #'global-flycheck-mode)
-  (setq flycheck-erlang-include-path '("../include")
-        flycheck-erlang-library-path '()
-        flycheck-check-syntax-automatically '(save))
+
+  ; (setq flycheck-erlang-include-path '("../include")
+  ;      flycheck-erlang-library-path '()
+  ;      flycheck-check-syntax-automatically '(save))
+  (setq flycheck-check-syntax-automatically '(save))
+
   ) ; Linter
 
 (use-package projectile
@@ -201,21 +204,21 @@
 (require 'eslint-fix)
 
 ;; ERLANG:
-(use-package erlang
-  :ensure t
-  :init
-  (add-to-list 'auto-mode-alist '("\\.P\\'" . erlang-mode))
-  (add-to-list 'auto-mode-alist '("\\.E\\'" . erlang-mode))
-  (add-to-list 'auto-mode-alist '("\\.S\\'" . erlang-mode))
-  :config
-  (add-hook 'erlang-mode-hook
-            'our-erlang-hook))
+; (use-package erlang
+  ; :ensure t
+  ; :init
+  ; (add-to-list 'auto-mode-alist '("\\.P\\'" . erlang-mode))
+  ; (add-to-list 'auto-mode-alist '("\\.E\\'" . erlang-mode))
+  ; (add-to-list 'auto-mode-alist '("\\.S\\'" . erlang-mode))
+  ; :config
+  ; (add-hook 'erlang-mode-hook
+            ; 'our-erlang-hook))
 
-(use-package edts
-  :ensure t
-  :init
-  (setq edts-inhibit-package-check t
-        edts-man-root "~/.emacs.d/edts/doc/18.2.1"))
+; (use-package edts
+  ; :ensure t
+  ; :init
+  ; (setq edts-inhibit-package-check t
+        ; edts-man-root "~/.emacs.d/edts/doc/18.2.1"))
 
 ;;; HASKELL
 (use-package
@@ -450,11 +453,11 @@
     :states 'normal
     "z" 'eslint-fix))
 
-(defun our-erlang-hook ()
-  "Erlang Mode Hook, hello Joe!"
-  (setq mode-name "erl"
-	erlang-compile-extra-opts '((i . "../include"))
-	erlang-root-dir "/usr/local/lib/erlang"))
+; (defun our-erlang-hook ()
+  ; "Erlang Mode Hook, hello Joe!"
+  ; (setq mode-name "erl"
+	; erlang-compile-extra-opts '((i . "../include"))
+	; erlang-root-dir "/usr/local/lib/erlang"))
 
 (defun our-lsp-hook ()
   "LSP go-to defs."
@@ -479,63 +482,63 @@
 
 ;;; DOES NOT PLAY WELL WITH OTHERS:
 ;;; CLOJURE:
-(use-package clojure-mode
-  :ensure t)
-(use-package cider
-  :ensure t)
-(add-hook 'clojure-mode-hook #'cider-mode)
-(add-hook 'clojure-mode-hook 'our-clojure-hook)
-(add-hook 'clojure-mode-hook 'enable-paredit-mode)
+; (use-package clojure-mode
+  ; :ensure t)
+; (use-package cider
+  ; :ensure t)
+; (add-hook 'clojure-mode-hook #'cider-mode)
+; (add-hook 'clojure-mode-hook 'our-clojure-hook)
+; (add-hook 'clojure-mode-hook 'enable-paredit-mode)
 
-(defun our-clojure-hook ()
-  "Clojure Mode Hook Un-complected"
-  (dear-leader
-	:states 'normal
-	"i"  '(cider-interrupt :which-key "interrupt CIDER computation")
-	;; Last expressions.
-	"xl" '(cider-eval-last-sexp :which-key "CIDER eval last expression")
-	"xr" '(cider-eval-last-sexp-and-replace :which-key "CIDER replace expression with result")
-	;; At point expressions.
-	"xp" '(cider-pprint-eval-defun-at-point :which-key "CIDER pretty-print eval expression")
-	"xx" '(cider-eval-sexp-at-point :which-key "CIDER eval expression at point")
-	"xf" '(cider-eval-defun-at-point :which-key "CIDER eval defun at point")
-	;; Up to point evaluation.
-	"x." '(cider-eval-defun-up-to-point :which-key "CIDER eval defun up to point")
-	;; Namespace
-	"x!" '(cider-ns-refresh :which-key "CIDER refesh all file in name-space")
-	"xn" '(cider-eval-ns-form :which-key "CIDER eval ns form")
-	;; Macros
-	"me" '(cider-macroexpand-1 :which-key "CIDER expand ONE macro")
-	"ma" '(cider-macroexpand-all :which-key "CIDER expand ALL macros")
-	)
+; (defun our-clojure-hook ()
+  ; "Clojure Mode Hook Un-complected"
+  ; (dear-leader
+	; :states 'normal
+	; "i"  '(cider-interrupt :which-key "interrupt CIDER computation")
+	; ;; Last expressions.
+	; "xl" '(cider-eval-last-sexp :which-key "CIDER eval last expression")
+	; "xr" '(cider-eval-last-sexp-and-replace :which-key "CIDER replace expression with result")
+	; ;; At point expressions.
+	; "xp" '(cider-pprint-eval-defun-at-point :which-key "CIDER pretty-print eval expression")
+	; "xx" '(cider-eval-sexp-at-point :which-key "CIDER eval expression at point")
+	; "xf" '(cider-eval-defun-at-point :which-key "CIDER eval defun at point")
+	; ;; Up to point evaluation.
+	; "x." '(cider-eval-defun-up-to-point :which-key "CIDER eval defun up to point")
+	; ;; Namespace
+	; "x!" '(cider-ns-refresh :which-key "CIDER refesh all file in name-space")
+	; "xn" '(cider-eval-ns-form :which-key "CIDER eval ns form")
+	; ;; Macros
+	; "me" '(cider-macroexpand-1 :which-key "CIDER expand ONE macro")
+	; "ma" '(cider-macroexpand-all :which-key "CIDER expand ALL macros")
+	; )
 
-   (dear-leader
-	:states 'visual
-	"xe" 'cider-eval-region
-	)
+   ; (dear-leader
+	; :states 'visual
+	; "xe" 'cider-eval-region
+	; )
 
-   (scholar
-	 :states 'normal
-	 ;; Eval in Repl
-	 "xx" '(cider-eval-buffer :which-key "CIDER eval whole buffer")
-	 "xl" '(cider-eval-last-sexp-to-repl :which-key "CIDER eval last expression in repl")
-	 ;; Sync Repl
-	 "r"  '(cider-switch-to-repl-buffer :which-key "CIDER eval load buffer into repl")
-	 "xn" '(cider-repl-set-ns :which-key "CIDER set repl to current ns")
-	 "!"  '(cider-find-and-clear-repl-output :which-key "CIDER clear repl")
-	 ;; Docs
-	 "?"  '(cider-doc :which-key "CIDER display doc string")
-	 "c"  '(cider-clojuredocs :which-key "CIDER display clojure docs")
-	 "w"  '(cider-clojuredocs-web :which-key "CIDER display doc string")
-	 "J"  '(cider-javadoc :which-key "CIDER display java docs")
-	 ;; Find Define
-	 "d"  '(cider-find-var :which-key "CIDER go-to definition")
-	 "r"  '(cider-find-resource :which-key "CIDER go-to resource")
-	 "n"  '(cider-find-ns :which-key "CIDER go-to name-space")
-	 "f"  '(cider-xref-fn-refs :which-key "CIDER find references across loaded namespaces")
-	 "F"  '(cider-xref-fn-deps :which-key "CIDER find dependants across loaded namespaces")
-	)
-   )
+   ; (scholar
+	 ; :states 'normal
+	 ; ;; Eval in Repl
+	 ; "xx" '(cider-eval-buffer :which-key "CIDER eval whole buffer")
+	 ; "xl" '(cider-eval-last-sexp-to-repl :which-key "CIDER eval last expression in repl")
+	 ; ;; Sync Repl
+	 ; "r"  '(cider-switch-to-repl-buffer :which-key "CIDER eval load buffer into repl")
+	 ; "xn" '(cider-repl-set-ns :which-key "CIDER set repl to current ns")
+	 ; "!"  '(cider-find-and-clear-repl-output :which-key "CIDER clear repl")
+	 ; ;; Docs
+	 ; "?"  '(cider-doc :which-key "CIDER display doc string")
+	 ; "c"  '(cider-clojuredocs :which-key "CIDER display clojure docs")
+	 ; "w"  '(cider-clojuredocs-web :which-key "CIDER display doc string")
+	 ; "J"  '(cider-javadoc :which-key "CIDER display java docs")
+	 ; ;; Find Define
+	 ; "d"  '(cider-find-var :which-key "CIDER go-to definition")
+	 ; "r"  '(cider-find-resource :which-key "CIDER go-to resource")
+	 ; "n"  '(cider-find-ns :which-key "CIDER go-to name-space")
+	 ; "f"  '(cider-xref-fn-refs :which-key "CIDER find references across loaded namespaces")
+	 ; "F"  '(cider-xref-fn-deps :which-key "CIDER find dependants across loaded namespaces")
+	; )
+   ; )
 ; A Git Wrapper
 (use-package magit
 	:ensure t
