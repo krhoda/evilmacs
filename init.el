@@ -7,8 +7,10 @@
 ; (load "~/.emacs.d/lisp/init.el")
 
 ;;; CHANGE THESE AS NEEDED PER MACHINE
+;;; CODE:
 (setq our-zsh-path "/usr/bin/zsh")
 (setq our-goplayground-path "/home/kdr/magic/sandbox/goplayground")
+;; TEMPORARY
 
 ;;; NEW DEFAULTS:
 (setq backup-directory-alist '(("." . "~/.emacs.d/backup"))
@@ -38,7 +40,7 @@
 (add-hook 'before-save-hook 'delete-trailing-whitespace) ; you get it.
 (add-to-list 'exec-path "usr/local/bin") ; I want go etc
 (add-hook 'prog-mode-hook 'electric-pair-mode) ; If paredit isn't for you, consider becoming the kind of person paredit is for.
-(add-hook 'prog-mode-hook 'mechwarrior)
+; (add-hook 'prog-mode-hook 'mechwarrior)
 
 ;;; PACKAGE MANAGEMENT
 (require 'package)
@@ -74,6 +76,14 @@
   :ensure t
   :config
   (global-evil-surround-mode 1))
+
+
+(autoload 'enable-paredit-mode "paredit"
+  "Turn on pseudo-structural editing of Lisp code."
+  t)
+
+(add-hook 'emacs-lisp-mode-hook       'enable-paredit-mode)
+(add-hook 'lisp-mode-hook             'enable-paredit-mode)
 
 ;;; GENERAL USE
 (use-package linum-relative
@@ -141,12 +151,7 @@
 			'(javascript-jshint json-jsonlist)))
   (flycheck-add-mode 'javascript-eslint 'web-mode)
   (add-hook 'after-init-hook #'global-flycheck-mode)
-
-  ; (setq flycheck-erlang-include-path '("../include")
-  ;      flycheck-erlang-library-path '()
-  ;      flycheck-check-syntax-automatically '(save))
   (setq flycheck-check-syntax-automatically '(save))
-
   ) ; Linter
 
 (use-package projectile
@@ -157,8 +162,8 @@
 
 (use-package load-theme-buffer-local :ensure t)
 
-;;;
 (use-package yasnippet :ensure t)
+(yas-global-mode t)
 
 ;;; LANGUAGES:
 ;; MARKDOWN
@@ -203,16 +208,13 @@
 (use-package rjsx-mode :ensure t)
 (require 'eslint-fix)
 
-;; ERLANG:
-; (use-package erlang
-  ; :ensure t
-  ; :init
-  ; (add-to-list 'auto-mode-alist '("\\.P\\'" . erlang-mode))
-  ; (add-to-list 'auto-mode-alist '("\\.E\\'" . erlang-mode))
-  ; (add-to-list 'auto-mode-alist '("\\.S\\'" . erlang-mode))
-  ; :config
-  ; (add-hook 'erlang-mode-hook
-            ; 'our-erlang-hook))
+;; ERLANG
+(use-package erlang :ensure t)
+
+;; SOMEONE ELSE'S ADVICE, TRY:
+;; Override the default erlang-compile-tag to use completion-at-point
+(eval-after-load 'erlang
+    '(define-key erlang-mode-map (kbd "C-M-i") #'company-lsp))
 
 ; (use-package edts
   ; :ensure t
@@ -225,34 +227,32 @@
   haskell-mode
   :ensure t
   )
-
+(use-package lsp-haskell :ensure t)
 ;; NOTE: BEWARE -- Flymake WILL need to be disabled through the configure-group interface for best results. LONG LIVE LSP ... until something better comes along.
+;;
+(setq lsp-prefer-flymake nil)
 (add-hook 'haskell-mode-hook 'flycheck-mode)
 (add-hook 'haskell-mode-hook 'enable-paredit-mode)
 
 ;; RUST
 (use-package
   racer
-  :ensure t
-  )
+  :ensure t)
 
 ;; Deprecated, but possibly useful if I want to bring cargo into the editor.
 (use-package
   cargo
-  :ensure t
-  )
+  :ensure t)
 
 (use-package
   rust-mode
   :ensure t
   :config
-  (setq rust-format-on-save t)
-  )
+  (setq rust-format-on-save t))
 
 (use-package
   flycheck-rust
-  :ensure t
-  )
+  :ensure t)
 
 (add-hook 'rust-mode-hook
 		  (lambda () (setq indent-tabs-mode nil)))
@@ -269,30 +269,30 @@
   "DIY rust mode custom keybindings and constant fmt."
   (add-hook 'before-save-hook 'rust-format-on-save) ; rustfmt before every save
   (despot
-    :states 'normal
-    "f" 'rust-format-buffer)
+	:states 'normal
+	"f" 'rust-format-buffer)
 
   (scholar
 	:states 'normal
 	;; Cannot use with current UI settings:
-    ;; "?"    '(racer-describe-tooltip :which-key "describe this tooltip")
-    "?"    '(racer-describe :which-key "describe this")
-    "d"    '(racer-find-definition :which-key "show definitions")
-	)
-  )
+	;; "?"    '(racer-describe-tooltip :which-key "describe this tooltip")
+	"?"    '(racer-describe :which-key "describe this")
+	"d"    '(racer-find-definition :which-key "show definitions")))
 
 ;;; WASM:
 ;; View WASM as LISP from: https://github.com/devonsparks/wat-mode
-(add-to-list 'load-path "~/.emacs.d/wat-mode")
+(add-to-list 'load-path "~/.emacs.d/lisp/wat-mode")
 (require 'wat-mode)
 
 ;;; LANG SERVER:
 ;;; FORGET THE PAST.
 (use-package lsp-mode
   :ensure t
+  :config (require 'lsp-clients) ;; For Rust.
   :hook (haskell-mode . lsp-deferred)
   :hook (web-mode . lsp-deferred)
   :hook (go-mode . lsp-deferred)
+  :hook (erlang-mode . lsp-deferred)
   ;; :hook (rust-mode . lsp-deferred)
   :commands (lsp lsp-deferred)
   )
@@ -300,22 +300,21 @@
 (use-package lsp-ui
   :ensure t
   :commands lsp-ui-mode)
+
+(setq lsp-ui-sideline-enable nil)
+(setq lsp-ui-doc-enable t)
+(setq lsp-ui-doc-position 'bottom)
+
 (add-hook 'lsp-mode-hook 'lsp-ui-mode)
 (add-hook 'lsp-mode-hook 'our-lsp-hook)
-
 
 (use-package company-lsp
   :ensure t
   :commands company-lsp)
 
-(use-package lsp-haskell :ensure t)
-
-(autoload 'enable-paredit-mode "paredit"
-  "Turn on pseudo-structural editing of Lisp code."
-  t)
-
-(add-hook 'emacs-lisp-mode-hook       'enable-paredit-mode)
-(add-hook 'lisp-mode-hook             'enable-paredit-mode)
+(use-package lsp-origami :ensure t)
+(add-hook 'origami-mode-hook #'lsp-origami-mode)
+(add-hook 'erlang-mode-hook #'origami-mode)
 
 ;;; LEADERSHIP
 (use-package general :ensure t
@@ -418,10 +417,10 @@
   (find-file "~/.emacs.d/lisp/init.el")
   (message "Opened: %s" (buffer-name)))
 
-(defun mechwarrior ()
-  "Mechwarrior Style Line Modes!"
-  (interactive)
-  (linum-relative-mode 1))
+; (defun mechwarrior ()
+  ; "Mechwarrior Style Line Modes!"
+  ; (interactive)
+  ; (linum-relative-mode 1))
 
 ;; MODE HOOKS
 (defun our-go-mode ()
@@ -452,12 +451,6 @@
   (dear-leader
     :states 'normal
     "z" 'eslint-fix))
-
-; (defun our-erlang-hook ()
-  ; "Erlang Mode Hook, hello Joe!"
-  ; (setq mode-name "erl"
-	; erlang-compile-extra-opts '((i . "../include"))
-	; erlang-root-dir "/usr/local/lib/erlang"))
 
 (defun our-lsp-hook ()
   "LSP go-to defs."
