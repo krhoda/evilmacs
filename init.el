@@ -9,8 +9,6 @@
 ;;; CHANGE THESE AS NEEDED PER MACHINE
 ;;; CODE:
 (setq our-zsh-path "/usr/bin/zsh")
-(setq our-goplayground-path "/home/kdr/magic/sandbox/goplayground")
-;; TEMPORARY
 
 ;;; NEW DEFAULTS:
 (setq backup-directory-alist '(("." . "~/.emacs.d/backup"))
@@ -77,7 +75,6 @@
   :config
   (global-evil-surround-mode 1))
 
-
 (autoload 'enable-paredit-mode "paredit"
   "Turn on pseudo-structural editing of Lisp code."
   t)
@@ -139,26 +136,11 @@
   (global-git-gutter-mode 't) ; The classic
   :diminish git-gutter-mode)
 
-(use-package auto-complete :ensure t) ; Auto Complete, a dependency of...
-(use-package company :ensure t) ; ...The gold standard in emacs land
-(add-hook 'after-init-hook 'global-company-mode)
-
-(use-package flycheck
-  :ensure t
-  :config
-  (setq-default flycheck-disabled-checkers
-		(append flycheck-disabled-checkers
-			'(javascript-jshint json-jsonlist)))
-  (flycheck-add-mode 'javascript-eslint 'web-mode)
-  (add-hook 'after-init-hook #'global-flycheck-mode)
-  (setq flycheck-check-syntax-automatically '(save))
-  ) ; Linter
-
 (use-package projectile
   :ensure t
   :config
   (projectile-mode +1)
-  (setq projectile-search-path '("~/magic/proj/", "~/go/src/touchsource/")))
+  (setq projectile-search-path '("~/magic/proj/")))
 
 (use-package load-theme-buffer-local :ensure t)
 
@@ -174,147 +156,6 @@
          ("\\.md\\'" . markdown-mode)
          ("\\.markdown\\'" . markdown-mode))
   :init (setq markdown-command "multimarkdown"))
-
-;; GOLANG:
-(use-package go-mode :ensure t)
-(use-package go-autocomplete :ensure t)
-;; (use-package flymake-go :ensure t)
-(use-package go-guru :ensure t)
-
-(add-hook 'go-mode-hook 'our-go-mode)
-
-(with-eval-after-load 'go-mode
-   (require 'go-autocomplete))
-
-;; Go Playground / REPL
-(use-package go-playground
-  :ensure t
-  :config
-  (setq go-playground-basedir our-goplayground-path))
-
-;; JAVASCRIPT:
-; for some reason not in MELPA...?
-(require 'web-mode)
-; (use-package web-mode
-  ; :ensure t
-  ; :config
-(add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
-(add-to-list 'auto-mode-alist '("\\.js[x]?\\'" . web-mode))
-(setq web-mode-content-types-alist '(("jsx" . "\\.js[x]?\\'")))
-
-(add-hook 'web-mode-hook  'our-web-hook)
-;; )
-
-(use-package rjsx-mode :ensure t)
-(require 'eslint-fix)
-
-;; ERLANG
-(use-package erlang :ensure t)
-
-;; SOMEONE ELSE'S ADVICE, TRY:
-;; Override the default erlang-compile-tag to use completion-at-point
-(eval-after-load 'erlang
-    '(define-key erlang-mode-map (kbd "C-M-i") #'company-lsp))
-
-; (use-package edts
-  ; :ensure t
-  ; :init
-  ; (setq edts-inhibit-package-check t
-        ; edts-man-root "~/.emacs.d/edts/doc/18.2.1"))
-
-;;; HASKELL
-(use-package
-  haskell-mode
-  :ensure t
-  )
-(use-package lsp-haskell :ensure t)
-;; NOTE: BEWARE -- Flymake WILL need to be disabled through the configure-group interface for best results. LONG LIVE LSP ... until something better comes along.
-;;
-(setq lsp-prefer-flymake nil)
-(add-hook 'haskell-mode-hook 'flycheck-mode)
-(add-hook 'haskell-mode-hook 'enable-paredit-mode)
-
-;; RUST
-(use-package
-  racer
-  :ensure t)
-
-;; Deprecated, but possibly useful if I want to bring cargo into the editor.
-(use-package
-  cargo
-  :ensure t)
-
-(use-package
-  rust-mode
-  :ensure t
-  :config
-  (setq rust-format-on-save t))
-
-(use-package
-  flycheck-rust
-  :ensure t)
-
-(add-hook 'rust-mode-hook
-		  (lambda () (setq indent-tabs-mode nil)))
-
-(add-hook 'flycheck-mode-hook #'flycheck-rust-setup)
-(add-hook 'rust-mode-hook #'cargo-minor-mode)
-(add-hook 'rust-mode-hook #'racer-mode)
-
-(add-hook 'racer-mode-hook #'our-rust-mode)
-(add-hook 'racer-mode-hook #'company-mode)
-(add-hook 'racer-mode-hook #'eldoc-mode)
-
-(defun our-rust-mode ()
-  "DIY rust mode custom keybindings and constant fmt."
-  (add-hook 'before-save-hook 'rust-format-on-save) ; rustfmt before every save
-  (despot
-	:states 'normal
-	"f" 'rust-format-buffer)
-
-  (scholar
-	:states 'normal
-	;; Cannot use with current UI settings:
-	;; "?"    '(racer-describe-tooltip :which-key "describe this tooltip")
-	"?"    '(racer-describe :which-key "describe this")
-	"d"    '(racer-find-definition :which-key "show definitions")))
-
-;;; WASM:
-;; View WASM as LISP from: https://github.com/devonsparks/wat-mode
-(add-to-list 'load-path "~/.emacs.d/lisp/wat-mode")
-(require 'wat-mode)
-
-;;; LANG SERVER:
-;;; FORGET THE PAST.
-(use-package lsp-mode
-  :ensure t
-  :config (require 'lsp-clients) ;; For Rust.
-  :hook (haskell-mode . lsp-deferred)
-  :hook (web-mode . lsp-deferred)
-  :hook (go-mode . lsp-deferred)
-  :hook (erlang-mode . lsp-deferred)
-  ;; :hook (rust-mode . lsp-deferred)
-  :commands (lsp lsp-deferred)
-  )
-
-(use-package lsp-ui
-  :ensure t
-  :commands lsp-ui-mode)
-
-(setq lsp-ui-sideline-enable nil)
-(setq lsp-ui-doc-enable t)
-(setq lsp-ui-doc-position 'bottom)
-
-(add-hook 'lsp-mode-hook 'lsp-ui-mode)
-(add-hook 'lsp-mode-hook 'our-lsp-hook)
-
-(use-package company-lsp
-  :ensure t
-  :commands company-lsp)
-
-(use-package lsp-origami :ensure t)
-(add-hook 'origami-mode-hook #'lsp-origami-mode)
-(add-hook 'erlang-mode-hook #'origami-mode)
 
 ;;; LEADERSHIP
 (use-package general :ensure t
@@ -365,10 +206,6 @@
    :keymaps 'normal
    "cl"   '(evilnc-comment-or-uncomment-lines :which-key "toggle line comment")
    "cp"   '(evilnc-comment-or-uncomment-paragraphs :which-key "toggle paragraph comment")
-
-   "pn"   '(go-playground :which-key "new Go Playground")
-   "pe"   '(go-playground-exec :which-key "run Go Playground")
-   "pd"   '(go-playground-rm :which-key "delete Go Playground")
    )
 
   (despot
@@ -384,12 +221,6 @@
    "k"   '(evil-window-up :which-key "jump to above window")
    "h"   '(evil-window-left :which-key "jump to window to the left")
    "l"   '(evil-window-right :which-key "jump to window to the right")
-
-   "?"    '(lsp-describe-thing-at-point :which-key "describe this")
-   "d"    '(lsp-ui-peek-find-definitions :which-key "show definitions")
-   "f"    '(lsp-ui-peek-find-references :which-key "show references")
-   "n"    '(lsp-ui-peek-jump-forward :which-key "jump to next definition")
-   "N"    '(lsp-ui-peek-jump-backward :which-key "jump to prev definition")
 
    "\""   '(paredit-meta-doublequote :which-key "wrap quote")
    "("    '(paredit-wrap-round :which-key "wrap in parens")
@@ -421,53 +252,6 @@
   ; "Mechwarrior Style Line Modes!"
   ; (interactive)
   ; (linum-relative-mode 1))
-
-;; MODE HOOKS
-(defun our-go-mode ()
-  "DIY go mode custom keybindings and constant fmt."
-  (add-hook 'before-save-hook 'gofmt-before-save) ; gofmt before every save
-  (setq gofmt-command "goimports")                ; gofmt uses invokes goimports
-  (if (not (string-match "go" compile-command))   ; set compile command default
-      (set (make-local-variable 'compile-command)
-           "go build -v && go test -v && go vet"))
-
-  (go-guru-hl-identifier-mode)                    ; highlight identifiers
-  ;; Key bindings specific to go-mode
-  (despot
-    :states 'normal
-    "f" 'gofmt)
-
-  (dear-leader
-    :states 'normal
-    "m" 'compile)
-
-  ;; Misc go stuff
-  (auto-complete-mode 1)
-  )
-
-(defun our-web-hook ()
-  "Hooks for Web mode.  Adjust indent."
-  (setq web-mode-markup-indent-offset 4)
-  (dear-leader
-    :states 'normal
-    "z" 'eslint-fix))
-
-(defun our-lsp-hook ()
-  "LSP go-to defs."
-   (scholar
-	 :keymaps 'normal
-     "?"    '(lsp-describe-thing-at-point :which-key "describe this")
-     "d"    '(lsp-ui-peek-find-definitions :which-key "show definitions")
-     "f"    '(lsp-ui-peek-find-references :which-key "show references")
-     "n"    '(lsp-ui-peek-jump-forward :which-key "jump to next definition")
-     "N"    '(lsp-ui-peek-jump-backward :which-key "jump to prev definition")
-   ))
-;; (defun our-local-theme-hook (theme)
-;;   "Set local buffer theme."
-;;   (load-theme-buffer-local theme (current-buffer)))
-
-;; (fullscreen)
-
 
 ;;; COLORSCHEMES:
 (add-to-list 'custom-theme-load-path
@@ -532,6 +316,7 @@
 	 ; "F"  '(cider-xref-fn-deps :which-key "CIDER find dependants across loaded namespaces")
 	; )
    ; )
+
 ; A Git Wrapper
 (use-package magit
 	:ensure t
@@ -577,6 +362,4 @@
            ; ("C-M-p" . dumb-jump-back)
            ; ("C-M-q" . dumb-jump-quick-look)))
 
-
 (provide 'init)
-;;; init ends here
