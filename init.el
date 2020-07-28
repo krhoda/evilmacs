@@ -2,6 +2,9 @@
 ; https://sam217pa.github.io/2016/09/02/how-to-build-your-own-spacemacs/
 ; https://jamiecollinson.com/blog/my-emacs-config/
 
+; Ripped for a bunch of lisp config.
+; https://lupan.pl/dotemacs/
+
 ;;; TO LOAD THIS UP PLACE IN ~/.emacs
 ; (add-to-list 'load-path "~/.emacs.d/lisp")
 ; (load "~/.emacs.d/lisp/init.el")
@@ -37,8 +40,7 @@
 (add-to-list 'load-path "~/.emacs.d/lisp/") ; vaccum in all the custom lisp I have lying around
 (add-hook 'before-save-hook 'delete-trailing-whitespace) ; you get it.
 (add-to-list 'exec-path "usr/local/bin") ; I want go etc
-(add-hook 'prog-mode-hook 'electric-pair-mode) ; If paredit isn't for you, consider becoming the kind of person paredit is for.
-; (add-hook 'prog-mode-hook 'mechwarrior)
+(add-hook 'prog-mode-hook 'electric-pair-mode)  ; Colored parens everywhere
 
 ;;; PACKAGE MANAGEMENT
 (require 'package)
@@ -46,14 +48,38 @@
 
 (setq package-archives '(("melpa" . "http://melpa.org/packages/")
 			 ("org"       . "http://orgmode.org/elpa/")
-			 ("gnu"       . "http://elpa.gnu.org/packages/")))
+			 ("gnu"       . "http://elpa.gnu.org/packages/"))
+	  tls-checklist t
+	  tls-program '("gnutls-cli --x509cafile %t -p %p %h")
+	  gnutls-verify-error t)
+
 (package-initialize)
 
-(unless (package-installed-p 'use-package)
-  (package-refresh-contents)
-  (package-install 'use-package)) ; bootstrap use-package
+(setq use-package-always-ensure nil)
+
+(unless (require 'use-package nil t)
+  (if (not (yes-or-no-p (concat "Refresh packages, install use-package and"
+								" other packages used by init file? ")))
+	  (error "you need to install use-package first")
+	(package-refresh-contents)
+	(package-install 'use-package)
+	(require 'use-package)
+	    (setq use-package-always-ensure t))) ; bootstrap use-package
 
 (require 'use-package)
+
+;; Ya Snippet, frequent dep of other packages.
+(use-package yasnippet
+    :hook (after-init . yas-global-mode))
+(use-package yasnippet-snippets
+    :defer)
+
+;;; Company for auto-complete menu
+(use-package company
+  :init
+  (setq company-idle-delay nil  ; avoid auto completion popup, use TAB to show
+		company-tooltip-align-annotations t)
+  :hook (after-init . global-company-mode))
 
 ;;; DEFY NATURE:
 (use-package evil
@@ -74,13 +100,6 @@
   :ensure t
   :config
   (global-evil-surround-mode 1))
-
-(autoload 'enable-paredit-mode "paredit"
-  "Turn on pseudo-structural editing of Lisp code."
-  t)
-
-(add-hook 'emacs-lisp-mode-hook       'enable-paredit-mode)
-(add-hook 'lisp-mode-hook             'enable-paredit-mode)
 
 ;;; GENERAL USE
 (use-package linum-relative
@@ -144,10 +163,10 @@
 
 (use-package load-theme-buffer-local :ensure t)
 
-(use-package yasnippet :ensure t)
-(yas-global-mode t)
+;;; Referred to in LEADERSHIP, used in LISPS
+(use-package paredit
+  :hook (eval-expression-minibuffer-setup . paredit-mode))
 
-;;; LANGUAGES:
 ;; MARKDOWN
 (use-package markdown-mode
   :ensure t
@@ -189,12 +208,6 @@
    ","    '(paredit-backward-slurp-sexp :which-key "paredit slurp backward")
    ">"    '(paredit-forward-barf-sexp :which-key "paredit barf forward")
    "<"    '(paredit-backward-barf-sexp :which-key "paredit barf backward")
-
-	;;; Figure out how to break it into mode specific
-   ;; "k"    '(org-metaup :which-key "shift org list up")
-   ;; "j"    '(org-metadown :which-key "shift org list down")
-   ;; "h"    '(org-metaleft :which-key "premote org list down")
-   ;; "l"    '(org-metaright :which-key "demote org list")
    )
 
   (dear-leader
@@ -235,27 +248,53 @@
   :config
   (add-hook 'after-init-hook 'which-key-mode)) ; help menus for rebindings
 
-;; ;;; CUSTOM FUNCTIONS:
-;; (defun fullscreen ()
-;;   "Fullscreen now!"
-;;   (interactive)
-;;   (x-send-client-message nil 0 nil "_NET_WM_STATE" 32
-;; 						 '(2 "_NET_WM_STATE_FULLSCREEN" 0)))
-
 (defun config-self ()
   "Opens Emacs config file in Emacs -- spooky."
   (interactive)
   (find-file "~/.emacs.d/lisp/init.el")
   (message "Opened: %s" (buffer-name)))
 
-; (defun mechwarrior ()
-  ; "Mechwarrior Style Line Modes!"
-  ; (interactive)
-  ; (linum-relative-mode 1))
-
 ;;; COLORSCHEMES:
 (add-to-list 'custom-theme-load-path
 			 (file-name-as-directory "~/.emacs.d/lisp/themes"))
+
+;;; LISPS:
+
+;; EMACS LISP:
+(defun our-emacs-lisp-hook ()
+  (paredit-mode 1))
+
+;; COMMON LISP:
+(setq slime-lisp-implementations '((sbcl ("sbcl")))
+	  slime-default-lisp 'sbcl
+	  slime-contribs '(slime-fancy))
+
+(use-package slime-company
+  :ensure t)
+
+(use-package slime
+  :demand
+  :config
+    (slime-setup '(slime-fancy slime-company slime-cl-indent)))
+
+(defun our-common-lisp-hook ()
+  (paredit-mode 1)
+  (set (make-local-variable 'company-backends) '(company-slime))
+  (company-mode)
+  (scholar
+	:states 'normal
+	"i" '(company-indent-or-complete-common :which-key "Indent or complete thing at point")
+	"!" '(slime :which-key "Launch Slime")
+	"x" '(slime-eval-last-expression :which-key "Evaluate last expression")
+	":" '(slime-interactive-eval :which-key "Interactively evaluation expression")
+	"r" '(slime-eval-region :which-key "Evaluate region")
+	"f" '(slime-edit-value :which-key "Edit form in new buffer")
+	"Q" '(slime-quit-lisp :which-key "End Slime REPL connection")
+	)
+  )
+
+(add-hook 'emacs-lisp-mode-hook #'our-emacs-lisp-hook)
+(add-hook 'lisp-mode-hook #'our-common-lisp-hook)
 
 ;;; DOES NOT PLAY WELL WITH OTHERS:
 ;;; CLOJURE:
