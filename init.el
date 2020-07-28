@@ -70,15 +70,14 @@
 
 ;; Ya Snippet, frequent dep of other packages.
 (use-package yasnippet
-    :hook (after-init . yas-global-mode))
-(use-package yasnippet-snippets
-    :defer)
+  :ensure t
+  :hook (after-init . yas-global-mode))
+(use-package yasnippet-snippets :ensure t)
 
+(use-package auto-complete :ensure t)
 ;;; Company for auto-complete menu
 (use-package company
   :init
-  (setq company-idle-delay nil  ; avoid auto completion popup, use TAB to show
-		company-tooltip-align-annotations t)
   :hook (after-init . global-company-mode))
 
 ;;; DEFY NATURE:
@@ -283,15 +282,37 @@
   (company-mode)
   (scholar
 	:states 'normal
-	"i" '(company-indent-or-complete-common :which-key "Indent or complete thing at point")
+	;;; REPL commands
 	"!" '(slime :which-key "Launch Slime")
-	"x" '(slime-eval-last-expression :which-key "Evaluate last expression")
-	":" '(slime-interactive-eval :which-key "Interactively evaluation expression")
-	"r" '(slime-eval-region :which-key "Evaluate region")
-	"f" '(slime-edit-value :which-key "Edit form in new buffer")
 	"Q" '(slime-quit-lisp :which-key "End Slime REPL connection")
+	"l" '(slime-load-file :which-key "Load file into REPL")
+
+	;;; Evaluation commands
+	"x" '(slime-eval-last-expression :which-key "Evaluate last expression")
+	"t" '(slime-eval-defun :which-key "Evaluate top-level expression")
+	":" '(slime-interactive-eval :which-key "Interactively evaluation expression")
+
+	;;; Edit commands
+	"f" '(slime-edit-value :which-key "Edit form in new buffer")
+
+	;;; Compile commands
+	"ct" '(slime-compile-defun :which-key "Compile top-level expression")
+	"cb" '(slime-compile-and-load-file :which-key "Compile and load current buffer")
+	"cc" '(slime-compile-file :which-key "Compile current buffer but do not load")
+
+	;;; Compile note navigation
+	"cn" '(slime-next-note :which-key "Next compiler note")
+	"cp" '(slime-previous-note :which-key "Prev compiler note")
+	"cq" '(slime-remove-notes :which-key "Delete all compiler notes")
+	"e" '(next-error :which-key "Next error using native Emacs I think")
 	)
-  )
+
+  (scholar
+	:states 'visual
+	"cr" '(slime-compile-region :which-key "Compile current current region")
+	"r" '(slime-eval-region :which-key "Evaluate region")
+	)
+)
 
 (add-hook 'emacs-lisp-mode-hook #'our-emacs-lisp-hook)
 (add-hook 'lisp-mode-hook #'our-common-lisp-hook)
