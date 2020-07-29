@@ -285,12 +285,36 @@
 	;;; REPL commands
 	"!" '(slime :which-key "Launch Slime")
 	"Q" '(slime-quit-lisp :which-key "End Slime REPL connection")
-	"l" '(slime-load-file :which-key "Load file into REPL")
+	"L" '(slime-load-file :which-key "Load file into REPL")
+	"I" '(slime-interrupt :which-key "Send SIGINT to REPL")
+	"R" '(slime-restart-inferior-lisp :which-key "Restart LISP process")
+	"P" '(slime-repl-set-package :which-key "Set package of REPL")
+	"Y" '(slime-sync-package-and-default-directory :which-key "Sync Working Dir + Package in REPL")
+
+	;;; Consider adding slime-cd and slime-pwd
 
 	;;; Evaluation commands
 	"x" '(slime-eval-last-expression :which-key "Evaluate last expression")
 	"t" '(slime-eval-defun :which-key "Evaluate top-level expression")
 	":" '(slime-interactive-eval :which-key "Interactively evaluation expression")
+
+	;;; Inspection:
+	"RET" '(slime-inspector-operate-on-point :which-key "Inspect thing at point")
+	"ii" '(slime-inspect :which-key "Inspect thing at point")
+	"id" '(slime-inspector-describe :which-key "Describe thing at point in inspector")
+	"ie" '(slime-inspector-eval :which-key "Evaluate expression at point in inspector")
+	"iv" '(slime-inspector-toggle-verbose :which-key "Toggle slime inspector verbosity")
+	"ip" '(slime-inspector-pop :which-key "Go to previous obj in inspector")
+	"in" '(slime-inspector-next :which-key "Go to next obj in inspector")
+	"ig" '(slime-inspector-reinspect :which-key "Reinspect")
+
+	"iq" '(slime-inspector-quit :which-key "Quit inspector")
+	"if" '(slime-inspector-pprint :which-key "Pretty print object in point in other buffer")
+	"is" '(slime-inspector-show-source :which-key "Find source code of object at point")
+	"ia" '(slime-inspector-fetch-all :which-key "Fetch all inspector contents and go to end (?)")
+	"i!" '(slime-inspector-copy-down :which-key "Store the value under point in the variable '*', available in the REPL")
+	"iP" '(slime-inspector-previous-inspectable-object :which-key "Previous inspectable object")
+	"iN" '(slime-inspector-next-inspectable-object :which-key "Next inspectable object")
 
 	;;; Edit commands
 	"f" '(slime-edit-value :which-key "Edit form in new buffer")
@@ -304,7 +328,56 @@
 	"cn" '(slime-next-note :which-key "Next compiler note")
 	"cp" '(slime-previous-note :which-key "Prev compiler note")
 	"cq" '(slime-remove-notes :which-key "Delete all compiler notes")
-	"e" '(next-error :which-key "Next error using native Emacs I think")
+	"n" '(next-error :which-key "Next error using native Emacs I think")
+
+	;;; Definitions navigation
+	"?" '(slime-pop-find-definition-stack :which-key "Go to usage of symbol at point")
+	"ds" '(slime-describe-symbol :which-key "Describe symbol at point")
+	"df" '(slime-describe-function :which-key "Describe function at point")
+
+	;;; Relationships
+	"wc" '(slime-who-calls :which-key "Shows function callers")
+	"wC" '(slime-calls-who :which-key "Shows function called by given function")
+	"wr" '(slime-who-references :which-key "Shows references to a global variable")
+	"wb" '(slime-who-binds :which-key "Shows bindings of a global variable")
+	"ws" '(slime-who-sets :which-key "Shows assignments to a global variable")
+	"wm" '(slime-who-macroexpands :which-key "Shows expansions of a macro")
+	"we" '(slime-who-specializes :which-key "Shows assignments to a global variable")
+	"wlc" '(slime-list-callers :which-key "Lists function callers")
+	"wlC" '(slime-list-callees :which-key "Lists function called by given function")
+
+	;;; Macros
+	"eu" '(slime-macroexpand-undo :which-key "Undo macro-expand")
+	"ee" '(slime-expand-1 :which-key "Expand macro at point once")
+	"e!" '(slime-macroexpand-all :which-key "Expand macro at point fully")
+	"ec" '(slime-compiler-macroexpand-1 :which-key "Compiler-macro expand s-expression at point once")
+	"eC" '(slime-compiler-macroexpand :which-key "Compiler-macro expand s-expression at point")
+
+	;;; TODO: What are these "Disassembly commands"?
+	;;; https://common-lisp.net/project/slime/doc/html/Disassembly.html
+
+	;;; Apropos
+	"a" '(slime-apropos :which-key "Apropos search of Lisp symbol names")
+	"A" '(slime-apropos-all :which-key "Apropos search of Lisp symbols, including internal symbols")
+
+	;;; NOTE: Ignored profiling tooling
+	;;; https://common-lisp.net/project/slime/doc/html/Profiling.html
+
+	;;; NOTE: Ignored debugger / IO tricks / Multiple REPLs info:
+	;;; https://common-lisp.net/project/slime/doc/html/index.html
+	)
+
+  (dear-leader
+	:states 'normal
+	"?" '(slime-edit-definition-other-frame :which-key "Open definition in new frame")
+	)
+
+  (despot
+	:states 'normal
+	"d" '(slime-edit-definition :which-key "Go to definition of symbol at point")
+	"!f" '(slime-hyperspec-lookup :which-key "Go to definition of function on the internet")
+	"!c" '(hyperspec-lookup-format :which-key "Go to definition of format character on the internet")
+	"!m" '(hyperspec-lookup-reader-macro :which-key "Go to definition of reader macro on the internet")
 	)
 
   (scholar
