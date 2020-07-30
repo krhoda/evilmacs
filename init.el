@@ -390,65 +390,141 @@
 (add-hook 'emacs-lisp-mode-hook #'our-emacs-lisp-hook)
 (add-hook 'lisp-mode-hook #'our-common-lisp-hook)
 
+;;; Racket:
+(use-package racket-mode :ensure t)
+(require 'racket-xp)
+(add-hook 'racket-repl-mode-hook #'racket-unicode-input-method-enable)
+
+(add-hook 'racket-mode-hook      #'our-racket-hook)
+(add-hook 'racket-mode-hook      #'racket-xp-mode)
+(add-hook 'racket-mode-hook      #'racket-unicode-input-method-enable)
+
+(defun our-racket-hook ()
+  (paredit-mode 1)
+  (company-mode)
+  (scholar
+  	:states 'normal
+	"!" '(racket-run-and-switch-to-repl :which-key "Run and focus on REPL")
+	"L" '(racket-run-module-at-point :which-key "Run current buffer in REPL")
+  	"z" '(racket-insert-lambda :which-key "Insert Lambda Symbol")
+	;;; Skipping Test Fold / Unfold.
+	;;; Also skipping some formatting.
+	"0" '(racket-cycle-paren-shapes :which-key "Cycle Paren Shapes")
+
+	"n" '(racket-xp-next-error :which-key "Jump to next explorer error")
+	"p" '(racket-xp-previous-error :which-key "Jump to previous explorer error")
+
+	"id" '(racket-xp-describe :which-key "Describe thing at point in explorer")
+	"iD" '(racket-repl-describe :which-key "Describe thing at point in REPL")
+	"ir" '(racket-xp-rename :which-key "Rename Var")
+	"ia" '(racket-xp-rename :which-key "Annotate Var")
+	"in" '(racket-xp-next-definition :which-key "Next definintion in explorer")
+	"ip" '(racket-xp-previous-definition :which-key "Prev definition in explorer")
+
+	"rd" '(racket-send-definition :which-key "Send definition to REPL")
+	"rl" '(racket-send-last-sexp :which-key "Send last s-expression to REPL")
+
+	"?" '(racket-xp-next-use :which-key "Next Use of name")
+	"/" '(racket-xp-previous-use :which-key "Prev Use of name")
+
+	"t" '(racket-test :which-key "Run the 'test' submodule")
+	"T" '(racket-raco-test :which-key "Run the 'test' submodule via Shelling out to Raco")
+
+
+	"ei" '(racket-stepper-mode :which-key "Interactive Macro Expansion")
+	"e!" '(racket-expand-file :which-key "Interactive Macro Expansion over whole file")
+	"ed" '(racket-expand-definition :which-key "Interactive Macro Expansion over definition")
+	"ex" '(racket-expand-last-sexp :which-key "Expand last s-expression once")
+
+	;;; Skipped Racket:
+	;;; Profile
+	;;; Logger
+	;;; Find Collection / Open Require Path
+	;;; Details here: https://www.racket-mode.com/#Introduction
+
+  	)
+
+  (scholar
+  	:states 'visual
+	"r" '(racket-send-region :which-key "Send region to REPL"))
+
+  (despot
+	:states 'normal
+	;; Docs
+	"d"  '(racket-xp-visit-definition :which-key "Racket go-to definition")
+	"D"  '(racket-repl-visit-definition :which-key "Racket REPL go-to definition")
+	"!d" '(racket-xp-documentation :which-key "Racket Explorer display docs")
+	"!D" '(racket-repl-documentation :which-key "Racket REPL display docs")
+	"!m" '(racket-visit-module :which-key "Racket go-to module definition")
+	))
+
 ;;; DOES NOT PLAY WELL WITH OTHERS:
 ;;; CLOJURE:
-; (use-package clojure-mode
-  ; :ensure t)
-; (use-package cider
-  ; :ensure t)
-; (add-hook 'clojure-mode-hook #'cider-mode)
-; (add-hook 'clojure-mode-hook 'our-clojure-hook)
-; (add-hook 'clojure-mode-hook 'enable-paredit-mode)
+(use-package clojure-mode :ensure t)
+(use-package cider :ensure t)
 
-; (defun our-clojure-hook ()
-  ; "Clojure Mode Hook Un-complected"
-  ; (dear-leader
-	; :states 'normal
-	; "i"  '(cider-interrupt :which-key "interrupt CIDER computation")
-	; ;; Last expressions.
-	; "xl" '(cider-eval-last-sexp :which-key "CIDER eval last expression")
-	; "xr" '(cider-eval-last-sexp-and-replace :which-key "CIDER replace expression with result")
-	; ;; At point expressions.
-	; "xp" '(cider-pprint-eval-defun-at-point :which-key "CIDER pretty-print eval expression")
-	; "xx" '(cider-eval-sexp-at-point :which-key "CIDER eval expression at point")
-	; "xf" '(cider-eval-defun-at-point :which-key "CIDER eval defun at point")
-	; ;; Up to point evaluation.
-	; "x." '(cider-eval-defun-up-to-point :which-key "CIDER eval defun up to point")
-	; ;; Namespace
-	; "x!" '(cider-ns-refresh :which-key "CIDER refesh all file in name-space")
-	; "xn" '(cider-eval-ns-form :which-key "CIDER eval ns form")
-	; ;; Macros
-	; "me" '(cider-macroexpand-1 :which-key "CIDER expand ONE macro")
-	; "ma" '(cider-macroexpand-all :which-key "CIDER expand ALL macros")
-	; )
+(add-hook 'clojure-mode-hook #'cider-mode)
+(add-hook 'clojure-mode-hook 'our-clojure-hook)
+(add-hook 'clojure-mode-hook 'enable-paredit-mode)
 
-   ; (dear-leader
-	; :states 'visual
-	; "xe" 'cider-eval-region
-	; )
+(defun our-clojure-hook ()
+  "Clojure Mode Hook Un-complected"
+  (scholar
+	:states 'normal
+	"!" '(cider-jack-in :which-key "start CIDER")
+	"I" '(cider-interrupt :which-key "interrupt CIDER computation")
+	"Q" '(cider-quit :which-key "Quit CIDER")
+	"Y" '(cider-ns-refresh :which-key "CIDER refesh all file in name-space")
+    "L" '(cider-switch-to-repl-buffer :which-key "CIDER eval load buffer into repl")
+	"P" '(cider-repl-set-ns :which-key "CIDER set repl to current ns")
+	"C"  '(cider-find-and-clear-repl-output :which-key "CIDER clear repl")
 
-   ; (scholar
-	 ; :states 'normal
-	 ; ;; Eval in Repl
-	 ; "xx" '(cider-eval-buffer :which-key "CIDER eval whole buffer")
-	 ; "xl" '(cider-eval-last-sexp-to-repl :which-key "CIDER eval last expression in repl")
-	 ; ;; Sync Repl
-	 ; "r"  '(cider-switch-to-repl-buffer :which-key "CIDER eval load buffer into repl")
-	 ; "xn" '(cider-repl-set-ns :which-key "CIDER set repl to current ns")
-	 ; "!"  '(cider-find-and-clear-repl-output :which-key "CIDER clear repl")
-	 ; ;; Docs
-	 ; "?"  '(cider-doc :which-key "CIDER display doc string")
-	 ; "c"  '(cider-clojuredocs :which-key "CIDER display clojure docs")
-	 ; "w"  '(cider-clojuredocs-web :which-key "CIDER display doc string")
-	 ; "J"  '(cider-javadoc :which-key "CIDER display java docs")
-	 ; ;; Find Define
-	 ; "d"  '(cider-find-var :which-key "CIDER go-to definition")
-	 ; "r"  '(cider-find-resource :which-key "CIDER go-to resource")
-	 ; "n"  '(cider-find-ns :which-key "CIDER go-to name-space")
-	 ; "f"  '(cider-xref-fn-refs :which-key "CIDER find references across loaded namespaces")
-	 ; "F"  '(cider-xref-fn-deps :which-key "CIDER find dependants across loaded namespaces")
-	; )
-   ; )
+	;;; Everything.
+	"x!" '(cider-eval-buffer :which-key "CIDER eval whole buffer")
+
+	;; Last expressions.
+	"xl" '(cider-eval-last-sexp :which-key "CIDER eval last expression")
+	"xr" '(cider-eval-last-sexp-and-replace :which-key "CIDER replace expression with result")
+
+	;; At point expressions.
+	"xp" '(cider-pprint-eval-defun-at-point :which-key "CIDER pretty-print eval expression")
+	"xx" '(cider-eval-sexp-at-point :which-key "CIDER eval expression at point")
+	"xf" '(cider-eval-defun-at-point :which-key "CIDER eval defun at point")
+
+	;; Up to point evaluation.
+	"x." '(cider-eval-defun-up-to-point :which-key "CIDER eval defun up to point")
+
+	;; Namespace
+	"xn" '(cider-eval-ns-form :which-key "CIDER eval ns form")
+
+	;; Macros
+	"ee" '(cider-macroexpand-1 :which-key "CIDER expand ONE macro")
+	"e!" '(cider-macroexpand-all :which-key "CIDER expand ALL macros")
+
+	"d"  '(cider-doc :which-key "CIDER display doc string")
+	;; Eval in Repl
+	"il" '(cider-eval-last-sexp-to-repl :which-key "CIDER eval last expression in repl")
+
+	"wr"  '(cider-xref-fn-refs :which-key "CIDER find references across loaded namespaces")
+	"wd"  '(cider-xref-fn-deps :which-key "CIDER find dependants across loaded namespaces")
+)
+
+   (scholar
+	:states 'visual
+	"r" '(cider-eval-region :which-key "CIDER Eval Region")
+	)
+
+   (despot
+	:states 'normal
+	;; Docs
+	"d"  '(cider-find-var :which-key "CIDER go-to definition")
+	"r"  '(cider-find-resource :which-key "CIDER go-to resource")
+	"!n" '(cider-find-ns :which-key "CIDER go-to name-space")
+	"!d" '(cider-clojuredocs :which-key "CIDER display clojure docs")
+	"!w" '(cider-clojuredocs-web :which-key "CIDER display doc string")
+	"!j" '(cider-javadoc :which-key "CIDER display java docs")
+	)
+   )
 
 ; A Git Wrapper
 (use-package magit
