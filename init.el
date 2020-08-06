@@ -198,8 +198,8 @@
    "J"    '(lambda () (interactive) (split-window-below) :which-key "split window below")
    "L"    '(lambda () (interactive) (split-window-right) :which-key "split window right")
 
-   "*"    '(lambda() (interactive) (eshell) :which-key "eshell now!")
-   "!"    '(lambda() (interactive) (term our-zsh-path) :which-key "zsh now!")
+   "*"    '(lambda () (interactive) (eshell) :which-key "eshell now!")
+   "!"    '(lambda () (interactive) (term our-zsh-path) :which-key "zsh now!")
 
    "p"    '(projectile-command-map :which-key "projects now!")
 
@@ -257,6 +257,21 @@
 (add-to-list 'custom-theme-load-path
 			 (file-name-as-directory "~/.emacs.d/lisp/themes"))
 
+;; Let there be lambda
+(defun classic-lambda ()
+  "Make lambda a prettier sight for classic LISPs"
+  (setq prettify-symbols-alist '(("lambda" . 955))))
+
+(defun industrial-lambda ()
+  "Make lambda a prettier sight for fancy clojure"
+  (setq prettify-symbols-alist '(("fn" . 955))))
+
+(add-hook 'scheme-mode-hook 'classic-lambda)
+(add-hook 'racket-mode-hook 'classic-lambda)
+(add-hook 'lisp-mode-hook 'classic-lambda)
+(add-hook 'clojure-mode-hook 'industrial-lambda)
+
+(global-prettify-symbols-mode 1)
 ;;; LISPS:
 
 ;; EMACS LISP:
@@ -264,6 +279,7 @@
   (paredit-mode 1))
 
 ;; COMMON LISP:
+
 (setq slime-lisp-implementations '((sbcl ("sbcl")))
 	  slime-default-lisp 'sbcl
 	  slime-contribs '(slime-fancy))
