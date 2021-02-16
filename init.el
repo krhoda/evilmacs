@@ -31,10 +31,9 @@
 (setq initial-scratch-message "fortune | cowsay") ; print a default message in the empty scratch buffer opened at startup
 (setq-default tab-width 4)
 (menu-bar-mode -1) ; No Menubars. I haven't forgotten Vim.
-; (tool-bar-mode -1) ; No Toolbars.
+(tool-bar-mode -1) ; No Toolbars.
 
 (setq shell-file-name our-zsh-path) ; Hail ZSH
-
 ; (global-hl-line-mode 1) ; vim mechwarrior
 
 (add-to-list 'load-path "~/.emacs.d/lisp/") ; vaccum in all the custom lisp I have lying around
@@ -55,23 +54,23 @@
 
 (package-initialize)
 
-(setq use-package-always-ensure nil)
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package)
+  (require 'use-package)) ; bootstrap use-package
 
-(unless (require 'use-package nil t)
-  (if (not (yes-or-no-p (concat "Refresh packages, install use-package and"
-								" other packages used by init file? ")))
-	  (error "you need to install use-package first")
-	(package-refresh-contents)
-	(package-install 'use-package)
-	(require 'use-package)
-	    (setq use-package-always-ensure t))) ; bootstrap use-package
-
+(setq use-package-always-ensure t)      ; All packages used have to be installed
 (require 'use-package)
 
 ;; Ya Snippet, frequent dep of other packages.
 (use-package yasnippet
-  :ensure t
-  :hook (after-init . yas-global-mode))
+  :ensure
+  :config
+  (yas-reload-all)
+  (add-hook 'prog-mode-hook 'yas-minor-mode)
+  (add-hook 'text-mode-hook 'yas-minor-mode))
+
+
 (use-package yasnippet-snippets :ensure t)
 
 (use-package auto-complete :ensure t)
@@ -90,6 +89,7 @@
   (setq evil-split-window-below t)
   (setq evil-shift-round nil)
   (setq evil-want-C-u-scroll t)
+  (setq evil-undo-system 'undo-redo)
   :config ; tweak evil after loading it
   (evil-mode)) ; load evil
 
@@ -99,6 +99,12 @@
   :ensure t
   :config
   (global-evil-surround-mode 1))
+
+(use-package undo-fu
+  :config
+  (define-key evil-normal-state-map "u" 'undo-fu-only-undo)
+  (define-key evil-normal-state-map "\C-r" 'undo-fu-only-redo))
+
 
 ;;; GENERAL USE
 (use-package linum-relative
@@ -179,11 +185,11 @@
 (use-package general :ensure t
   :config
   ; Define "SPC", "g", and "," as prefixes
-  (general-create-definer dear-leader :prefix "SPC") ; SPACE IS OUR LEADER.
-  (general-create-definer despot :prefix "g") ; g is our lesser leader.
-  (general-create-definer scholar :prefix ",") ; , is our mobility leader
+  (general-create-definer augustus :prefix "SPC") ; SPACE IS OUR LEADER.
+  (general-create-definer caeser :prefix "g") ; g is our lesser leader.
+  (general-create-definer dux :prefix ",") ; , is our mobility leader
 
-  (dear-leader
+  (augustus
    :keymaps 'normal
    "E"    '(config-self :which-key "open init.el")
 
@@ -209,22 +215,22 @@
    "<"    '(paredit-backward-barf-sexp :which-key "paredit barf backward")
    )
 
-  (dear-leader
+  (augustus
 	:keymaps 'visual
 	"e"   '(er/expand-region :which-key "expand region in visual mode")
    )
 
-  (despot
+  (caeser
    :keymaps 'normal
    "cl"   '(evilnc-comment-or-uncomment-lines :which-key "toggle line comment")
    "cp"   '(evilnc-comment-or-uncomment-paragraphs :which-key "toggle paragraph comment")
    )
 
-  (despot
+  (caeser
    :keymaps 'visual
    "c"    '(evilnc-comment-or-uncomment-lines :which-key "toggle line comment"))
 
-  (scholar
+  (dux
    :keymaps 'normal
    ","    '(avy-goto-char-2 :which-key "move to occurance of these 2 chars")
    "m"    '(avy-goto-line :which-key "move to line")
@@ -243,6 +249,7 @@
   )
 
 (use-package which-key :ensure t
+  :ensure t
   :diminish which-key-mode
   :config
   (add-hook 'after-init-hook 'which-key-mode)) ; help menus for rebindings
@@ -259,20 +266,21 @@
 
 ;; Let there be lambda
 (defun classic-lambda ()
-  "Make lambda a prettier sight for classic LISPs"
+  "Make lambda a prettier sight for classic LISPs."
   (setq prettify-symbols-alist '(("lambda" . 955))))
 
 (defun industrial-lambda ()
-  "Make lambda a prettier sight for fancy clojure"
-  (setq prettify-symbols-alist '(("fn" . 955))))
+  "Make lambda a prettier sight for fancy clojure."
+  (setq prettify-symbols-alist '(("fn". 955))))
 
+;;; LISPS:
 (add-hook 'scheme-mode-hook 'classic-lambda)
 (add-hook 'racket-mode-hook 'classic-lambda)
 (add-hook 'lisp-mode-hook 'classic-lambda)
 (add-hook 'clojure-mode-hook 'industrial-lambda)
 
 (global-prettify-symbols-mode 1)
-;;; LISPS:
+
 
 ;; EMACS LISP:
 (defun our-emacs-lisp-hook ()
@@ -296,7 +304,7 @@
   (paredit-mode 1)
   (set (make-local-variable 'company-backends) '(company-slime))
   (company-mode)
-  (scholar
+  (dux
 	:states 'normal
 	;;; REPL commands
 	"!" '(slime :which-key "Launch Slime")
@@ -383,12 +391,12 @@
 	;;; https://common-lisp.net/project/slime/doc/html/index.html
 	)
 
-  (dear-leader
+  (augustus
 	:states 'normal
 	"?" '(slime-edit-definition-other-frame :which-key "Open definition in new frame")
 	)
 
-  (despot
+  (caeser
 	:states 'normal
 	"d" '(slime-edit-definition :which-key "Go to definition of symbol at point")
 	"!f" '(slime-hyperspec-lookup :which-key "Go to definition of function on the internet")
@@ -396,7 +404,7 @@
 	"!m" '(hyperspec-lookup-reader-macro :which-key "Go to definition of reader macro on the internet")
 	)
 
-  (scholar
+  (dux
 	:states 'visual
 	"cr" '(slime-compile-region :which-key "Compile current current region")
 	"r" '(slime-eval-region :which-key "Evaluate region")
@@ -418,7 +426,7 @@
 (defun our-racket-hook ()
   (paredit-mode 1)
   (company-mode)
-  (scholar
+  (dux
   	:states 'normal
 	"!" '(racket-run-and-switch-to-repl :which-key "Run and focus on REPL")
 	"L" '(racket-run-module-at-point :which-key "Run current buffer in REPL")
@@ -460,11 +468,11 @@
 
   	)
 
-  (scholar
+  (dux
   	:states 'visual
 	"r" '(racket-send-region :which-key "Send region to REPL"))
 
-  (despot
+  (caeser
 	:states 'normal
 	;; Docs
 	"d"  '(racket-xp-visit-definition :which-key "Racket go-to definition")
@@ -484,8 +492,8 @@
 (add-hook 'clojure-mode-hook 'enable-paredit-mode)
 
 (defun our-clojure-hook ()
-  "Clojure Mode Hook Un-complected"
-  (scholar
+  "Clojure Mode Hook Un-complected."
+  (dux
 	:states 'normal
 	"!" '(cider-jack-in :which-key "start CIDER")
 	"I" '(cider-interrupt :which-key "interrupt CIDER computation")
@@ -525,12 +533,12 @@
 	"wd"  '(cider-xref-fn-deps :which-key "CIDER find dependants across loaded namespaces")
 )
 
-   (scholar
+   (dux
 	:states 'visual
 	"r" '(cider-eval-region :which-key "CIDER Eval Region")
 	)
 
-   (despot
+   (caeser
 	:states 'normal
 	;; Docs
 	"d"  '(cider-find-var :which-key "CIDER go-to definition")
@@ -553,6 +561,9 @@
 ;
 ;;; TO BE TRIED:
 ; (use-package git-timemachine :ensure t) ; Didn't work :(
+
+;;; Separedit, edit comments separate from code.
+;;; https://github.com/twlz0ne/separedit.el
 
 ; FREAKING STACK OVERFLOW IN EMACS
   ; (use-package sx
