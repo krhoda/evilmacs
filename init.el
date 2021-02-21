@@ -70,7 +70,6 @@
   (add-hook 'prog-mode-hook 'yas-minor-mode)
   (add-hook 'text-mode-hook 'yas-minor-mode))
 
-
 (use-package yasnippet-snippets :ensure t)
 
 (use-package auto-complete :ensure t)
@@ -78,6 +77,7 @@
 (use-package company
   :init
   :hook (after-init . global-company-mode))
+
 
 ;;; DEFY NATURE:
 (use-package evil
@@ -132,6 +132,16 @@
 (setq ivy-initial-inputs-alist nil) ; Removes the "^" from the default search format
 (use-package ivy-hydra :ensure t) ; menus for ivy.
 
+(defun our-current-file-path ()
+  "Insert file path."
+  (interactive)
+  (unless (featurep 'counsel) (require 'counsel))
+  (ivy-read "Find file: " 'read-file-name-internal
+            :matcher #'counsel--find-file-matcher
+            :action
+            (lambda (x)
+              (insert x))))
+
 (use-package expand-region
   :ensure t
   :commands er/expand-region) ; Logical Region Expansion
@@ -185,24 +195,28 @@
 (use-package general :ensure t
   :config
   ; Define "SPC", "g", and "," as prefixes
-  (general-create-definer augustus :prefix "SPC") ; SPACE IS OUR LEADER.
-  (general-create-definer caeser :prefix "g") ; g is our lesser leader.
-  (general-create-definer dux :prefix ",") ; , is our mobility leader
+  ;; Augustus is our representative to the outside world.
+  ;; The file systems, the tag databases, the shells --
+  ;; All bow to Augustus
+  (general-create-definer augustus :prefix "SPC")
+  ;; Caeser is the tasked with the home domain, the editor.
+  ;; shepherd of many buffers, summoner of MANpages, master of REPL.
+  (general-create-definer caeser :prefix ",") ; , is our mobility leader
+  ;; Pontifus has few responsibilities, to reveal definitions,
+  ;; or remove lines -- even whole paragraphs!
+  (general-create-definer pontifus :prefix "g") ; g is our lesser leader.
 
   (augustus
    :keymaps 'normal
    "E"    '(config-self :which-key "open init.el")
 
    "e"    '(er/expand-region :which-key "expand region in normal mode")
-
+   "i"    '(our-current-file-path :which-key "insert current file path")
    "b"	  '(ivy-switch-buffer :which-key "switch-buffer")  ; change buffer, chose using ivy
 
    "/"    '(counsel-git-grep :which-key "git grep") ; find string in git project
    "f"    '(counsel-find-file :which-key "find file") ; find file in ivy
    "r"    '(counsel-recentf :which-key "recent files") ; find recent files in ivy
-
-   "J"    '(lambda () (interactive) (split-window-below) :which-key "split window below")
-   "L"    '(lambda () (interactive) (split-window-right) :which-key "split window right")
 
    "*"    '(lambda () (interactive) (eshell) :which-key "eshell now!")
    "!"    '(lambda () (interactive) (term our-zsh-path) :which-key "zsh now!")
@@ -220,20 +234,23 @@
 	"e"   '(er/expand-region :which-key "expand region in visual mode")
    )
 
-  (caeser
+  (pontifus
    :keymaps 'normal
    "cl"   '(evilnc-comment-or-uncomment-lines :which-key "toggle line comment")
    "cp"   '(evilnc-comment-or-uncomment-paragraphs :which-key "toggle paragraph comment")
    )
 
-  (caeser
+  (pontifus
    :keymaps 'visual
    "c"    '(evilnc-comment-or-uncomment-lines :which-key "toggle line comment"))
 
-  (dux
+  (caeser
    :keymaps 'normal
    ","    '(avy-goto-char-2 :which-key "move to occurance of these 2 chars")
    "m"    '(avy-goto-line :which-key "move to line")
+
+   "J"    '(lambda () (interactive) (split-window-below) :which-key "split window below")
+   "L"    '(lambda () (interactive) (split-window-right) :which-key "split window right")
 
    "j"   '(evil-window-down :which-key "jump to below window")
    "k"   '(evil-window-up :which-key "jump to above window")
@@ -264,9 +281,71 @@
 (add-to-list 'custom-theme-load-path
 			 (file-name-as-directory "~/.emacs.d/lisp/themes"))
 
-;; RUST
+;; C (The one and only)
+;;; Following: https://tuhdo.github.io/c-ide.html
+
+;; gtags support, going my own way -- consider helm > ivy?
+(use-package counsel-gtags :ensure t)
+(use-package clang-format :ensure t)
+
+(defun our-c-mode-hook ()
+  (setq company-backends (delete 'company-semantic company-backends))
+  (define-key c-mode-map  [(tab)] 'company-complete)
+  (define-key c++-mode-map  [(tab)] 'company-complete)
+  (augustus
+	:states 'normal
+	"?" '(counsel-gtags-create-tags :which-key "create GNU Global tags")
+	"+" '(counsel-gtags-update-tags :which-key "update GNU Global tags")
+	)
+
+  (pontifus
+	:states 'normal
+	"d"   '(counsel-gtags-find-definition :which-key "find gtag definition")
+	"r"   '(counsel-gtags-find-reference :which-key "find gtag references")
+	"s"   '(counsel-gtags-find-symbol :which-key "find gtag symbol references"))
+
+  (caeser
+	:states 'normal
+	"z"   '(clang-format-buffer :which-key "format buffer")
+	"f"   '(counsel-gtags-find-files :which-key "find gtag in list of files")
+	"N"   '(counsel-gtags-go-backward :which-key "Go back in context stack")
+	"n"   '(counsel-gtags-go-forward :which-key "Go forward in context stack")
+	"?"   '(counsel-gtags-dwim :which-key "Go to ref if on def, or def if on ref")
+	"d"   '(counsel-gtags-find-definition-other-window :which-key "find gtag definition other window")
+	"r"   '(counsel-gtags-find-reference-other-window :which-key "find gtag references other window")
+	"s"   '(counsel-gtags-find-symbol-other-window :which-key "find gtag symbol references other window"))
+	)
+
+;; TODO: Learn Speedbar / sr-speedbar
+
+;; Irony mode!
+(use-package irony :ensure)
+(use-package flycheck-irony :ensure)
+(eval-after-load 'flycheck
+  '(add-hook 'flycheck-mode-hook #'flycheck-irony-setup))
+(use-package company-c-headers :ensure)
+(use-package company-irony :ensure)
+
+(eval-after-load 'company
+  '(add-to-list 'company-backends 'company-irony))
+
+(eval-after-load 'company
+  '(add-to-list 'company-backends 'company-c-headers))
+
+;; Consider adding asm-mode + eshell-mode + dired-mode to the mix?
+(add-hook 'c-mode-hook 'counsel-gtags-mode)
+(add-hook 'c-mode-hook 'irony-mode)
+(add-hook 'c-mode-hook 'our-c-mode-hook)
+
+(add-hook 'c++-mode-hook 'counsel-gtags-mode)
+(add-hook 'c++-mode-hook 'irony-mode)
+(add-hook 'c++-mode-hook 'our-c-mode-hook)
+
+(add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options)
+
+;; RUST -- Currently failing with LSP >:(
 (use-package rustic
-  :ensure
+  :ensure t
   :bind (:map rustic-mode-map
               ("M-j" . lsp-ui-imenu)
               ("M-?" . lsp-find-references)
@@ -367,7 +446,7 @@
   (paredit-mode 1)
   (set (make-local-variable 'company-backends) '(company-slime))
   (company-mode)
-  (dux
+  (caeser
 	:states 'normal
 	;;; REPL commands
 	"!" '(slime :which-key "Launch Slime")
@@ -459,7 +538,7 @@
 	"?" '(slime-edit-definition-other-frame :which-key "Open definition in new frame")
 	)
 
-  (caeser
+  (pontifus
 	:states 'normal
 	"d" '(slime-edit-definition :which-key "Go to definition of symbol at point")
 	"!f" '(slime-hyperspec-lookup :which-key "Go to definition of function on the internet")
@@ -467,7 +546,7 @@
 	"!m" '(hyperspec-lookup-reader-macro :which-key "Go to definition of reader macro on the internet")
 	)
 
-  (dux
+  (caeser
 	:states 'visual
 	"cr" '(slime-compile-region :which-key "Compile current current region")
 	"r" '(slime-eval-region :which-key "Evaluate region")
@@ -489,7 +568,7 @@
 (defun our-racket-hook ()
   (paredit-mode 1)
   (company-mode)
-  (dux
+  (caeser
   	:states 'normal
 	"!" '(racket-run-and-switch-to-repl :which-key "Run and focus on REPL")
 	"L" '(racket-run-module-at-point :which-key "Run current buffer in REPL")
@@ -531,11 +610,11 @@
 
   	)
 
-  (dux
+  (caeser
   	:states 'visual
 	"r" '(racket-send-region :which-key "Send region to REPL"))
 
-  (caeser
+  (pontifus
 	:states 'normal
 	;; Docs
 	"d"  '(racket-xp-visit-definition :which-key "Racket go-to definition")
@@ -556,7 +635,7 @@
 
 (defun our-clojure-hook ()
   "Clojure Mode Hook Un-complected."
-  (dux
+  (caeser
 	:states 'normal
 	"!" '(cider-jack-in :which-key "start CIDER")
 	"I" '(cider-interrupt :which-key "interrupt CIDER computation")
@@ -596,12 +675,12 @@
 	"wd"  '(cider-xref-fn-deps :which-key "CIDER find dependants across loaded namespaces")
 )
 
-   (dux
+   (caeser
 	:states 'visual
 	"r" '(cider-eval-region :which-key "CIDER Eval Region")
 	)
 
-   (caeser
+   (pontifus
 	:states 'normal
 	;; Docs
 	"d"  '(cider-find-var :which-key "CIDER go-to definition")
