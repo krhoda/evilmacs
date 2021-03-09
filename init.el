@@ -331,7 +331,11 @@
   (lsp-eldoc-render-all t)
   (lsp-idle-delay 0.6)
   :hook
-  (((js2-mode rjsx-mode) . lsp) (svelte-mode . lsp))
+  (
+   ((js2-mode rjsx-mode) . lsp)
+   (svelte-mode . lsp)
+   (haskell-mode . lsp)
+   (haskell-literate-mode . lsp))
   :config
   (add-hook 'lsp-mode-hook 'lsp-ui-mode)
   (add-hook 'lsp-mode-hook 'our-lsp-mode))
@@ -392,6 +396,9 @@
 
 ;; SVELTE
 (use-package svelte-mode :ensure)
+
+;; HASKELL
+(use-package lsp-haskell :ensure)
 
 ;; RUST
 (use-package rustic
