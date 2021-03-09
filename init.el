@@ -41,6 +41,12 @@
 (add-to-list 'exec-path "usr/local/bin") ; I want go etc
 (add-hook 'prog-mode-hook 'electric-pair-mode)  ; Colored parens everywhere
 
+(defun config-self ()
+  "Opens Emacs config file in Emacs -- spooky."
+  (interactive)
+  (find-file "~/.emacs.d/lisp/init.el")
+  (message "Opened: %s" (buffer-name)))
+
 ;;; PACKAGE MANAGEMENT
 (require 'package)
 (setq package-enable-at-startup nil) ; tells emacs not to load any packages before starting up
@@ -73,11 +79,43 @@
 (use-package yasnippet-snippets :ensure t)
 
 (use-package auto-complete :ensure t)
+
 ;;; Company for auto-complete menu
 (use-package company
   :init
-  :hook (after-init . global-company-mode))
+  :custom
+  (company-idle-delay 0.5)
+  :hook (after-init . global-company-mode)
+  :bind (:map company-mode-map
+			  ("<tab>" . tab-indent-or-complete)
+			  ("TAB" . tab-indent-or-complete)))
 
+(defun company-yasnippet-or-completion ()
+  (interactive)
+  (or (do-yas-expand)
+      (company-complete-common)))
+
+(defun check-expansion ()
+  (save-excursion
+    (if (looking-at "\\_>") t
+      (backward-char 1)
+      (if (looking-at "\\.") t
+        (backward-char 1)
+        (if (looking-at "::") t nil)))))
+
+(defun do-yas-expand ()
+  (let ((yas/fallback-behavior 'return-nil))
+    (yas/expand)))
+
+(defun tab-indent-or-complete ()
+  (interactive)
+  (if (minibufferp)
+      (minibuffer-complete)
+    (if (or (not yas/minor-mode)
+            (null (do-yas-expand)))
+        (if (check-expansion)
+            (company-complete-common)
+          (indent-for-tab-command)))))
 
 ;;; DEFY NATURE:
 (use-package evil
@@ -194,17 +232,17 @@
 ;;; LEADERSHIP
 (use-package general :ensure t
   :config
-  ; Define "SPC", "g", and "," as prefixes
+  ; Define "SPC", "," AND "g" as prefixes
   ;; Augustus is our representative to the outside world.
   ;; The file systems, the tag databases, the shells --
   ;; All bow to Augustus
   (general-create-definer augustus :prefix "SPC")
   ;; Caeser is the tasked with the home domain, the editor.
-  ;; shepherd of many buffers, summoner of MANpages, master of REPL.
-  (general-create-definer caeser :prefix ",") ; , is our mobility leader
+  ;; Shepherd of many buffers, summoner of MANpages, master of REPL.
+  (general-create-definer caeser :prefix ",")
   ;; Pontifus has few responsibilities, to reveal definitions,
   ;; or remove lines -- even whole paragraphs!
-  (general-create-definer pontifus :prefix "g") ; g is our lesser leader.
+  (general-create-definer pontifus :prefix "g")
 
   (augustus
    :keymaps 'normal
@@ -265,21 +303,100 @@
    )
   )
 
+;;; COLORSCHEMES:
+(add-to-list 'custom-theme-load-path
+			 (file-name-as-directory "~/.emacs.d/lisp/themes"))
+
 (use-package which-key :ensure t
   :ensure t
   :diminish which-key-mode
   :config
   (add-hook 'after-init-hook 'which-key-mode)) ; help menus for rebindings
 
-(defun config-self ()
-  "Opens Emacs config file in Emacs -- spooky."
-  (interactive)
-  (find-file "~/.emacs.d/lisp/init.el")
-  (message "Opened: %s" (buffer-name)))
+(use-package flycheck :ensure)
 
-;;; COLORSCHEMES:
-(add-to-list 'custom-theme-load-path
-			 (file-name-as-directory "~/.emacs.d/lisp/themes"))
+(use-package yasnippet
+  :ensure
+  :config
+  (yas-reload-all)
+  (add-hook 'prog-mode-hook 'yas-minor-mode)
+  (add-hook 'text-mode-hook 'yas-minor-mode))
+
+;; For the LSP family of support:
+(use-package lsp-mode
+  :ensure
+  :commands (lsp)
+  :custom
+  (lsp-rust-analyzer-cargo-watch-command "clippy")
+  (lsp-eldoc-render-all t)
+  (lsp-idle-delay 0.6)
+  :hook
+  (((js2-mode rjsx-mode) . lsp) (svelte-mode . lsp))
+  :config
+  (add-hook 'lsp-mode-hook 'lsp-ui-mode)
+  (add-hook 'lsp-mode-hook 'our-lsp-mode))
+
+(use-package lsp-ui
+  :ensure
+  :commands lsp-ui-mode
+  :custom
+  (lsp-ui-peek-always-show t)
+  (lsp-ui-sideline-show-code-actions nil)
+  (lsp-ui-doc-enable nil)
+  )
+
+(use-package lsp-ivy :commands lsp-ivy-workplace-symbol)
+(use-package lsp-treemacs :commands lsp-treemacs-error-list)
+
+(defun our-lsp-mode ()
+  (pontifus
+	:states 'normal
+	"d" '(lsp-find-definition :which-key "go to definition")
+	"r" '(lsp-find-references :which-key "go to references")
+	"i" '(lsp-find-implementation :which-key "go to implmentations")
+	"t" '(lsp-find-type-definition :which-key "go to type definitions")
+	"D" '(lsp-find-declaration :which-key "go to declaration")
+	"h" '(lsp-call-hierarchy-incoming-call? :which-key "show call heirarchy")
+	)
+  (caeser
+	:states 'normal
+	"d" '(lsp-ui-peek-find-definitions :which-key "go to definition")
+	"r" '(lsp-ui-peek-find-references :which-key "go to references")
+	"i" '(lsp-ui-peek-find-implementation :which-key "go to implmentations")
+	"R" '(lsp-rename :which-key "rename all instances of symbol at point")
+	"z" '(lsp-format-buffer :which-key "fmt buffer")
+	"?" '(lsp-ui-doc-show :which-key "show doc")
+	))
+
+;; JS / TS
+(use-package typescript-mode
+  :ensure
+  :defer t
+  :mode ("\\.ts\\'")
+  :config)
+
+(use-package rjsx-mode :ensure
+  :mode ("\\.js\\'" "\\.jsx\\'"))
+
+;; Move to an indent area?
+(defun disable-tabs ()
+  (setq indent-tabs-mode nil))
+
+
+(defun enable-tabs ()
+  (local-set-key (kbd "TAB") 'tab-to-tab-stop)
+  (setq indent-tabs-mode t)
+  (setq tab-width 4))
+
+(add-hook 'js2-mode-hook 'disable-tabs)
+
+;; SVELTE
+(use-package svelte-mode :ensure)
+
+;; RUST
+(use-package rustic
+  :ensure
+  :config (setq rustic-format-on-save t))
 
 ;; C (The one and only)
 ;;; Following: https://tuhdo.github.io/c-ide.html
@@ -343,67 +460,7 @@
 
 (add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options)
 
-;; RUST -- Currently failing with LSP >:(
-(use-package rustic
-  :ensure t
-  :bind (:map rustic-mode-map
-              ("M-j" . lsp-ui-imenu)
-              ("M-?" . lsp-find-references)
-              ("C-c C-c l" . flycheck-list-errors)
-              ("C-c C-c a" . lsp-execute-code-action)
-              ("C-c C-c r" . lsp-rename)
-              ("C-c C-c q" . lsp-workspace-restart)
-              ("C-c C-c Q" . lsp-workspace-shutdown)
-              ("C-c C-c s" . lsp-rust-analyzer-status)
-              ("C-c C-c e" . lsp-rust-analyzer-expand-macro)
-              ("C-c C-c d" . dap-hydra))
-  :config
-  ;; uncomment for less flashiness
-  ;; (setq lsp-eldoc-hook nil)
-  ;; (setq lsp-enable-symbol-highlighting nil)
-  ;; (setq lsp-signature-auto-activate nil)
-
-  ;; comment to disable rustfmt on save
-  (setq rustic-format-on-save t)
-  (add-hook 'rustic-mode-hook 'rk/rustic-mode-hook))
-
-(defun rk/rustic-mode-hook ()
-  ;; so that run C-c C-c C-r works without having to confirm
-  (setq-local buffer-save-without-query t))
-
-(use-package lsp-mode
-  :ensure
-  :commands lsp
-  :custom
-  ;; what to use when checking on-save. "check" is default, I prefer clippy
-  (lsp-rust-analyzer-cargo-watch-command "clippy")
-  (lsp-eldoc-render-all t)
-  (lsp-idle-delay 0.6)
-  :config
-  (add-hook 'lsp-mode-hook 'lsp-ui-mode))
-
-(use-package lsp-ui
-  :ensure
-  :commands lsp-ui-mode
-  :custom
-  (lsp-ui-peek-always-show t)
-  (lsp-ui-sideline-show-hover t)
-  (lsp-ui-doc-enable nil))
-
-(use-package flycheck :ensure)
-
-(use-package yasnippet
-  :ensure
-  :config
-  (yas-reload-all)
-  (add-hook 'prog-mode-hook 'yas-minor-mode)
-  (add-hook 'text-mode-hook 'yas-minor-mode))
-
-(defun company-yasnippet-or-completion ()
-  (interactive)
-  (or (do-yas-expand)
-      (company-complete-common)))
-
+;; TOML
 (use-package toml-mode :ensure)
 
 ;; Let there be lambda
