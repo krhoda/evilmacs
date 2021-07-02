@@ -143,7 +143,6 @@
   (define-key evil-normal-state-map "u" 'undo-fu-only-undo)
   (define-key evil-normal-state-map "\C-r" 'undo-fu-only-redo))
 
-
 ;;; GENERAL USE
 (use-package linum-relative
   :ensure t
@@ -325,13 +324,14 @@
 ;; For the LSP family of support:
 (use-package lsp-mode
   :ensure
-  :commands (lsp)
+  :commands lsp
   :custom
   (lsp-rust-analyzer-cargo-watch-command "clippy")
   (lsp-eldoc-render-all t)
   (lsp-idle-delay 0.6)
   :hook
   (
+   (rustic-mode . lsp)
    ((js2-mode rjsx-mode) . lsp)
    (svelte-mode . lsp)
    (haskell-mode . lsp)
@@ -379,6 +379,22 @@
   :mode ("\\.ts\\'")
   :config)
 
+;; (use-package tide
+;;   :ensure t
+;;   )
+
+(defun our-lsp-mode ()
+  (interactive)
+  ;; (tide-setup)
+  (flycheck-mode +1)
+  (setq flycheck-check-syntax-automatically '(save mode-enabled))
+  (eldoc-mode +1)
+  ;; (tide-hl-identifier-mode +1)
+  (company-mode +1))
+
+;; suggested for tide?
+(setq company-tooltip-align-annotations t)
+
 (use-package rjsx-mode :ensure
   :mode ("\\.js\\'" "\\.jsx\\'"))
 
@@ -404,6 +420,9 @@
 (use-package rustic
   :ensure
   :config (setq rustic-format-on-save t))
+(setq rustic-lsp-server 'rust-analyzer)
+(setq lsp-rust-analyzer-server-command '("/home/kdr/.local/bin/rust-analyzer"))
+(push 'rustic-clippy flycheck-checkers)
 
 ;; C (The one and only)
 ;;; Following: https://tuhdo.github.io/c-ide.html
@@ -467,8 +486,28 @@
 
 (add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options)
 
+;; YAML
+(use-package yaml-mode :ensure)
+(add-to-list 'auto-mode-alist '("\\.yml\\'" . yaml-mode))
 ;; TOML
 (use-package toml-mode :ensure)
+;; Ink
+(use-package ink-mode :mode "\\.ink\\'")
+(setq ink-inklecate-path "/home/kdr/magic/tool/inklecate")
+
+(defun our-ink-mode ()
+  (setq tab-width 2)
+  (caeser
+	:states 'normal
+	"pp" '(ink-play :which-key "Start game locally")
+	"pk" '(ink-play-knot :which-key "Start game at given knot")
+	"t" '(ink-follow-link-at-point :which-key "Traverse link at point")
+	"h" '(ink-display-manual :which-key "Display manual")
+	))
+
+(add-hook 'ink-mode-hook 'flymake-mode)
+(add-hook 'ink-mode-hook 'our-ink-mode)
+
 
 ;; Let there be lambda
 (defun classic-lambda ()
