@@ -326,7 +326,7 @@
   :ensure
   :commands lsp
   :custom
-  (lsp-rust-analyzer-cargo-watch-command "clippy")
+  (lsp-rust "clippy")
   (lsp-eldoc-render-all t)
   (lsp-idle-delay 0.6)
   :hook
@@ -416,9 +416,8 @@
 ;; RUST
 (use-package rustic
   :ensure
-  :config (setq rustic-format-on-save t))
-(setq rustic-lsp-server 'rust-analyzer)
-(setq lsp-rust-analyzer-server-command '("/home/kdr/.local/bin/rust-analyzer"))
+  :init (setq rustic-format-on-save t))
+(setq rustic-lsp-server 'rls)
 (push 'rustic-clippy flycheck-checkers)
 
 ;; C (The one and only)
