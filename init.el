@@ -353,6 +353,13 @@
 (use-package lsp-treemacs :commands lsp-treemacs-error-list)
 
 (defun our-lsp-mode ()
+  (interactive)
+  ;; (tide-setup)
+  (flycheck-mode +1)
+  (setq flycheck-check-syntax-automatically '(save mode-enabled))
+  (eldoc-mode +1)
+  ;; (tide-hl-identifier-mode +1)
+  (company-mode +1)
   (pontifus
 	:states 'normal
 	"d" '(lsp-find-definition :which-key "go to definition")
@@ -379,18 +386,8 @@
   :mode ("\\.ts\\'")
   :config)
 
-;; (use-package tide
-;;   :ensure t
-;;   )
-
-(defun our-lsp-mode ()
-  (interactive)
-  ;; (tide-setup)
-  (flycheck-mode +1)
-  (setq flycheck-check-syntax-automatically '(save mode-enabled))
-  (eldoc-mode +1)
-  ;; (tide-hl-identifier-mode +1)
-  (company-mode +1))
+(use-package tide
+  :ensure t)
 
 ;; suggested for tide?
 (setq company-tooltip-align-annotations t)
